@@ -1,0 +1,45 @@
+Language:
+  - TypeScript
+
+Test Runner:
+  - Playwright Test
+
+API Testing:
+  - Playwright API Request Context
+
+Kafka:
+  - KafkaJS
+  - Local Docker Compose
+
+Database:
+  - PostgreSQL
+  - node-postgres (pg)
+
+Schema Validation:
+  - AJV
+  - JSON Schema
+
+Mocking:
+  - WireMock
+
+Reporting:
+  - Allure
+  - Playwright HTML Report
+
+Logging:
+  - Pino
+
+Configuration:
+  - dotenv
+  - zod validation
+
+Code Quality:
+  - ESLint
+  - Prettier
+
+CI/CD:
+  - GitHub Actions
+  - GitLab CI
+
+Containers:
+  - Docker Compose
