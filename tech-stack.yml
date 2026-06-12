@@ -1,6 +1,10 @@
 Language:
   - TypeScript
 
+Runtime:
+  - Node.js
+  - npm
+
 Test Runner:
   - Playwright Test
 
@@ -21,6 +25,9 @@ Schema Validation:
 
 Mocking:
   - WireMock
+
+Test Data:
+  - Faker
 
 Reporting:
   - Allure

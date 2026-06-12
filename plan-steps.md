@@ -90,6 +90,7 @@ app/src/
 
 tests/src/
   assertions/
+    schema/
   reporting/
   utils/
 ```
@@ -240,10 +241,13 @@ Pipeline:
 ```text
 lint
 unit/framework
-smoke
 api
 kafka
 contract
+negative
+retry-idempotency
+smoke-performance
+consumer-lag-timeout
 e2e
 report publish
 ```

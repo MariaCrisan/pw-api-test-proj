@@ -24,12 +24,14 @@ Commands in this README describe the intended workflow once the initial Node/Pla
 | Area | Tools |
 | --- | --- |
 | Language | TypeScript |
+| Runtime | Node.js, npm |
 | Test runner | Playwright Test |
 | API testing | Playwright API Request Context |
 | Kafka | KafkaJS, Docker Compose |
 | Database | PostgreSQL, node-postgres `pg` |
 | Schema validation | AJV, JSON Schema |
 | Mocking | WireMock |
+| Test data | Faker |
 | Reporting | Allure, Playwright HTML Report |
 | Logging | Pino |
 | Configuration | dotenv, zod |
@@ -80,7 +82,8 @@ root
 │       ├── assertions
 │       │   ├── api
 │       │   ├── kafka
-│       │   └── database
+│       │   ├── database
+│       │   └── schema
 │       │
 │       ├── fixtures
 │       │   ├── api
@@ -118,6 +121,11 @@ root
 │   ├── responses
 │   └── kafka
 │
+├── docs
+│   ├── architecture.md
+│   ├── conventions.md
+│   └── testing-strategy.md
+│
 ├── .github
 │   └── workflows
 │
@@ -134,9 +142,10 @@ root
 ## Directory Ownership
 
 - `app/src` contains reusable framework code: API clients, DB clients, DB query helpers, Kafka producer/consumer helpers, schemas, configuration, logging, and generic utilities.
-- `tests/src` contains test suites and test-specific support: assertions, fixtures, builders, WireMock helpers, reporting helpers, test config, and test utilities.
+- `tests/src` contains test suites and test-specific support: assertions, schema assertion helpers, fixtures, builders, WireMock helpers, reporting helpers, test config, and test utilities.
 - `docker` contains local service assets and WireMock mappings/files.
 - `artifacts` contains generated runtime output only: logs, reports, request/response payloads, and captured Kafka messages.
+- `docs` contains architecture, convention, and testing strategy documentation.
 
 ## Prerequisites
 
@@ -353,10 +362,13 @@ Required stages:
 - install
 - lint
 - build
-- smoke-tests
 - api-tests
 - kafka-tests
 - contract-tests
+- negative-tests
+- retry-idempotency-tests
+- smoke-performance-tests
+- consumer-lag-timeout-tests
 - e2e-tests
 - report-publish
 

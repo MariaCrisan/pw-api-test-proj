@@ -32,20 +32,21 @@ Framework requirements:
 13. Add environment-based config for local, dev, and stage.
 14. Add test data builders and JSON fixtures under tests/src.
 15. Add test-specific assertions under tests/src/assertions.
-16. Add reporting helpers under tests/src/reporting and generated output under artifacts.
-17. Add sample tests:
+16. Add schema assertion helpers under tests/src/assertions/schema.
+17. Add reporting helpers under tests/src/reporting and generated output under artifacts.
+18. Add sample tests:
     - REST API happy-path test
     - REST API negative test
     - API response JSON Schema validation test
     - Kafka produce/consume test
     - End-to-end REST API call followed by Kafka and PostgreSQL validation
     - WireMock-backed API test
-18. Add Docker Compose setup for:
+19. Add Docker Compose setup for:
     - Kafka
     - PostgreSQL
     - WireMock
     - Schema Registry if useful for the chosen setup
-19. Add npm scripts for:
+20. Add npm scripts for:
     - test
     - test:api
     - test:kafka
@@ -59,11 +60,12 @@ Framework requirements:
     - report:allure
     - lint
     - format
-20. Add ESLint and Prettier.
-21. Add GitHub Actions and GitLab CI pipelines that:
+21. Add ESLint and Prettier.
+22. Add GitHub Actions and GitLab CI pipelines that:
     - install dependencies
     - start Docker Compose services
     - wait for Kafka readiness
+    - wait for PostgreSQL readiness
     - wait for WireMock readiness
     - run lint
     - run test groups independently
@@ -95,6 +97,7 @@ Suggested project structure:
   - assertions/api/
   - assertions/kafka/
   - assertions/database/
+  - assertions/schema/
   - fixtures/api/
   - fixtures/kafka/
   - fixtures/db/
@@ -111,6 +114,7 @@ Suggested project structure:
 - docker/wiremock/mappings/
 - docker/wiremock/__files/
 - artifacts/
+- docs/
 - .github/workflows/
 - .gitlab/
 - .env.example

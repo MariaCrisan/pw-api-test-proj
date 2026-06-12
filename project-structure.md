@@ -1,3 +1,8 @@
+# Target Project Structure
+
+This is the intended structure once the framework scaffold is implemented.
+
+```text
 root
 │
 ├── app
@@ -39,7 +44,8 @@ root
 │       ├── assertions
 │       │   ├── api
 │       │   ├── kafka
-│       │   └── database
+│       │   ├── database
+│       │   └── schema
 │       │
 │       ├── fixtures
 │       │   ├── api
@@ -77,6 +83,11 @@ root
 │   ├── responses
 │   └── kafka
 │
+├── docs
+│   ├── architecture.md
+│   ├── conventions.md
+│   └── testing-strategy.md
+│
 ├── .github
 │   └── workflows
 │
@@ -88,3 +99,4 @@ root
 ├── playwright.config.ts
 ├── tsconfig.json
 └── README.md
+```

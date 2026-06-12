@@ -44,6 +44,7 @@ tests/
       api/
       kafka/
       database/
+      schema/
     fixtures/
       api/
       kafka/

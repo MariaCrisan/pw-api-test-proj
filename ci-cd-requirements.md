@@ -10,10 +10,13 @@ Pipeline stages:
 - install
 - lint
 - build
-- smoke-tests
 - api-tests
 - kafka-tests
 - contract-tests
+- negative-tests
+- retry-idempotency-tests
+- smoke-performance-tests
+- consumer-lag-timeout-tests
 - e2e-tests
 - report-publish
 
@@ -37,6 +40,10 @@ Smoke Tests
 REST Functional Tests
 Kafka Tests
 Contract Tests
+Negative Tests
+Retry/Idempotency Tests
+Smoke/Performance Tests
+Consumer Lag/Timeout Tests
 E2E Tests
 
 should be runnable independently.
