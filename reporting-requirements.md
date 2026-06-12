@@ -1,5 +1,8 @@
 Reporting requirements:
 
+Reusable reporting helpers, attachment helpers, and report metadata utilities should live under tests/src/reporting.
+Generated report output and diagnostics should live under artifacts.
+
 1. Allure Reporting
    - Generate Allure results for every test execution.
    - Include test steps.

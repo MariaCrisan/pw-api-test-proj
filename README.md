@@ -1,10 +1,12 @@
 # pw-api-test-proj
 
-TypeScript API test automation framework for REST APIs with Kafka event validation, PostgreSQL assertions, JSON Schema contract checks, WireMock mocks and Playwright Test.
+TypeScript API test automation framework for REST APIs with Kafka event validation, PostgreSQL assertions, JSON Schema contract checks, WireMock mocks, and Playwright Test.
 
 ## Project Status
 
-This repository currently contains the framework requirements, target project structure, test strategy, and implementation plan. The source files, Docker Compose setup, Playwright configuration, npm scripts, and CI pipelines should be added according to the structure documented here.
+This repository currently contains the framework requirements, target project structure, test strategy, and implementation plan. The source files, Docker Compose setup, Playwright configuration, npm scripts, and CI pipelines still need to be added.
+
+Commands in this README describe the intended workflow once the initial Node/Playwright scaffold exists.
 
 ## Goals
 
@@ -44,6 +46,10 @@ root
 │       ├── clients
 │       │   ├── api
 │       │   └── db
+│       │
+│       ├── db
+│       │   ├── queries
+│       │   └── transactions
 │       │
 │       ├── kafka
 │       │   ├── producer
@@ -87,22 +93,50 @@ root
 │       │   ├── kafka
 │       │   └── db
 │       │
+│       ├── mocks
+│       │   └── wiremock
+│       │
+│       ├── reporting
+│       │
 │       ├── config
 │       │
 │       └── utils
 │
-├── reports
-│
 ├── docker
+│   ├── kafka
+│   ├── postgres
+│   └── wiremock
+│       ├── mappings
+│       └── __files
 │
 ├── artifacts
+│   ├── logs
+│   ├── allure-results
+│   ├── allure-report
+│   ├── html-report
+│   ├── requests
+│   ├── responses
+│   └── kafka
 │
 ├── .github
+│   └── workflows
 │
 ├── .gitlab
 │
+├── .env.example
+├── docker-compose.yml
+├── package.json
+├── playwright.config.ts
+├── tsconfig.json
 └── README.md
 ```
+
+## Directory Ownership
+
+- `app/src` contains reusable framework code: API clients, DB clients, DB query helpers, Kafka producer/consumer helpers, schemas, configuration, logging, and generic utilities.
+- `tests/src` contains test suites and test-specific support: assertions, fixtures, builders, WireMock helpers, reporting helpers, test config, and test utilities.
+- `docker` contains local service assets and WireMock mappings/files.
+- `artifacts` contains generated runtime output only: logs, reports, request/response payloads, and captured Kafka messages.
 
 ## Prerequisites
 
@@ -113,7 +147,7 @@ root
 - PostgreSQL access for database validation tests
 - Allure CLI, if viewing Allure reports locally outside npm scripts
 
-## Setup
+## Planned Setup
 
 Install dependencies:
 
@@ -121,7 +155,7 @@ Install dependencies:
 npm install
 ```
 
-Create a local environment file from the example file once it exists:
+Create a local environment file:
 
 ```bash
 cp .env.example .env
@@ -137,7 +171,7 @@ Expected local services:
 
 - Kafka
 - WireMock
-- PostgreSQL, if running database checks locally
+- PostgreSQL
 - Schema Registry, if enabled by the Kafka setup
 
 Stop local dependencies:
@@ -148,7 +182,9 @@ docker compose down
 
 ## Configuration
 
-Configuration should be loaded from environment variables using `dotenv` and validated with `zod`.
+Shared runtime configuration should live under `app/src/config` and be loaded from environment variables using `dotenv` and validated with `zod`.
+
+Test-runner and assertion behavior should live under `tests/src/config`.
 
 Do not hardcode secrets, base URLs, credentials, topic names, database connection strings, or environment-specific values in test files.
 
@@ -170,7 +206,7 @@ Recommended environments:
 - `dev`
 - `stage`
 
-## Running Tests
+## Planned Test Commands
 
 Expected npm scripts:
 
@@ -234,7 +270,7 @@ Rules:
 6. Add the test under the relevant folder in `tests/src`.
 7. Run the specific test group before opening a pull request.
 
-## Adding Kafka Assertions
+## Adding Kafka Tests
 
 1. Add producer logic under `app/src/kafka/producer`.
 2. Add consumer logic under `app/src/kafka/consumer`.
@@ -248,21 +284,29 @@ Rules:
 
 Database checks should use reusable PostgreSQL helpers.
 
-Expected support:
+Expected ownership:
 
-- Shared database client
-- Query helper layer
-- Database assertion helper layer
-- Transactional cleanup
-- Polling assertions for eventual consistency
-- Validation of records created by Kafka consumers
-- Environment-specific connection configuration
+- DB connection/client code lives under `app/src/clients/db`.
+- DB query helpers live under `app/src/db/queries`.
+- DB transaction and cleanup helpers live under `app/src/db/transactions`.
+- DB assertions live under `tests/src/assertions/database`.
+- DB fixtures and builders live under `tests/src/fixtures/db` and `tests/src/builders/db`.
 
 Credentials must come from environment variables.
 
+## WireMock
+
+WireMock runtime assets should live under `docker/wiremock`.
+
+- Static mappings belong in `docker/wiremock/mappings`.
+- Response body files belong in `docker/wiremock/__files`.
+- Test helper code for creating, resetting, or asserting stubs belongs in `tests/src/mocks/wiremock`.
+
 ## Reporting
 
-Reports and diagnostics should be written under `artifacts`.
+Generated reports and diagnostics should be written under `artifacts`.
+
+Reusable reporting helpers, attachment helpers, and report metadata utilities should live under `tests/src/reporting`.
 
 Expected artifact layout:
 
@@ -320,6 +364,7 @@ Pipeline behavior:
 
 - Start Docker Compose services.
 - Wait for Kafka readiness.
+- Wait for PostgreSQL readiness.
 - Wait for WireMock readiness.
 - Run test suites independently.
 - Publish Allure artifacts.
@@ -333,6 +378,7 @@ Pipeline behavior:
 
 - Keep tests readable as business scenarios.
 - Keep reusable app/framework helpers in `app/src` and test-specific helpers in `tests/src`.
+- Keep generated output under `artifacts`; do not commit runtime logs or generated reports.
 - Keep helpers generic enough for reuse without over-engineering.
 - Use strict TypeScript.
 - Make Kafka and database assertions deterministic with explicit polling and timeout behavior.

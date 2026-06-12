@@ -2,41 +2,62 @@ Test type organization:
 
 Create clear separation between test types, while keeping shared logic reusable.
 
-Use this structure:
+Use this test suite structure:
 
 tests/
-  rest-functional/
-  kafka/
-  e2e/
-  contracts/
-  negative/
-  retry-idempotency/
-  smoke-performance/
-  consumer-lag-timeout/
-
-Shared reusable code must live outside test folders:
-
-src/
-  clients/
-    api/
-    db/
-  kafka/
-    producer.ts
-    consumer.ts
-    assertions.ts
-  db/
-    dbClient.ts
-    dbAssertions.ts
-  schemas/
-    api/
+  src/
+    rest-functional/
     kafka/
+    e2e/
     contracts/
-  fixtures/
-  builders/
-  assertions/
-  config/
-  utils/
-  mocks/
+    negative/
+    retry-idempotency/
+    smoke-performance/
+    consumer-lag-timeout/
+
+Reusable app/framework code lives under app/src:
+
+app/
+  src/
+    clients/
+      api/
+      db/
+    db/
+      queries/
+      transactions/
+    kafka/
+      producer/
+      consumer/
+    schemas/
+      api/
+      kafka/
+      contracts/
+    config/
+    logging/
+    utils/
+
+Reusable test-specific code lives under tests/src:
+
+tests/
+  src/
+    assertions/
+      api/
+      kafka/
+      database/
+    fixtures/
+      api/
+      kafka/
+      db/
+      contracts/
+    builders/
+      api/
+      kafka/
+      db/
+    mocks/
+      wiremock/
+    reporting/
+    config/
+    utils/
 
 Test type requirements:
 
@@ -49,7 +70,7 @@ Test type requirements:
    - Consume messages from Kafka topics.
    - Validate payload, headers, keys, timestamps, and JSON schema.
 
-3. End-to-end API → Kafka → DB checks
+3. End-to-end API -> Kafka -> DB checks
    - Call REST API.
    - Wait for expected Kafka event.
    - Validate resulting DB state.
@@ -81,7 +102,8 @@ Test type requirements:
 
 Rules:
 - Tests must be clearly grouped by purpose.
-- Reusable methods must never be duplicated inside test files.
+- Reusable app/framework helpers must live under app/src.
+- Reusable test-specific helpers must live under tests/src.
 - Test files should read like business scenarios, not low-level plumbing.
 - Shared helpers must be generic enough for reuse but not over-engineered.
 - Each test type must have at least one example test.

@@ -11,87 +11,120 @@ Tech stack:
 - Schema validation: JSON Schema using AJV
 - Mocking: WireMock
 - Reporting: Playwright HTML report + Allure report
-- CI/CD: GitHub Actions
-- Logging: pino or winston
-- Config management: dotenv + typed config validation
-- Containers: Docker Compose for Kafka, Schema Registry, WireMock, and any local test dependencies
+- CI/CD: GitHub Actions and GitLab CI
+- Logging: pino
+- Config management: dotenv + typed config validation with zod
+- Containers: Docker Compose for Kafka, PostgreSQL, WireMock, and optional Schema Registry
 
 Framework requirements:
-1. Generate a clean modular project structure.
-2. Include reusable REST API client utilities.
-3. Include reusable Kafka producer utilities.
-4. Include reusable Kafka consumer utilities with polling, timeout, retries, and clear failure messages.
-5. Support producing test messages to Kafka topics.
-6. Support consuming Kafka messages and asserting payload content.
-7. Support validating Kafka message payloads against JSON Schema.
-8. Support REST API response schema validation using JSON Schema.
-9. Add WireMock support for mocking downstream REST dependencies.
-10. Add environment-based config for local, dev, and stage.
-11. Add test data builders and JSON fixtures.
-12. Add sample tests:
+1. Generate a clean modular project structure with separate app/src and tests/src roots.
+2. Include reusable REST API client utilities under app/src/clients/api.
+3. Include reusable PostgreSQL client utilities under app/src/clients/db.
+4. Include reusable PostgreSQL query helpers under app/src/db/queries.
+5. Include reusable PostgreSQL transaction and cleanup helpers under app/src/db/transactions.
+6. Include reusable Kafka producer utilities under app/src/kafka/producer.
+7. Include reusable Kafka consumer utilities under app/src/kafka/consumer.
+8. Support producing test messages to Kafka topics.
+9. Support consuming Kafka messages and asserting payload content.
+10. Support validating Kafka message payloads against JSON Schema.
+11. Support REST API response schema validation using JSON Schema.
+12. Add WireMock support for mocking downstream REST dependencies.
+13. Add environment-based config for local, dev, and stage.
+14. Add test data builders and JSON fixtures under tests/src.
+15. Add test-specific assertions under tests/src/assertions.
+16. Add reporting helpers under tests/src/reporting and generated output under artifacts.
+17. Add sample tests:
     - REST API happy-path test
     - REST API negative test
     - API response JSON Schema validation test
     - Kafka produce/consume test
-    - End-to-end REST API call followed by Kafka side-effect validation
+    - End-to-end REST API call followed by Kafka and PostgreSQL validation
     - WireMock-backed API test
-13. Add Docker Compose setup for:
+18. Add Docker Compose setup for:
     - Kafka
-    - Zookeeper or Kraft mode Kafka, whichever is simpler and stable
-    - Schema Registry if useful for the chosen setup
+    - PostgreSQL
     - WireMock
-14. Add npm scripts for:
-    - install
+    - Schema Registry if useful for the chosen setup
+19. Add npm scripts for:
     - test
     - test:api
     - test:kafka
     - test:e2e
+    - test:contracts
+    - test:negative
+    - test:retry-idempotency
+    - test:smoke-performance
+    - test:consumer-lag-timeout
     - report
+    - report:allure
     - lint
     - format
-15. Add ESLint and Prettier.
-16. Add README with:
-    - prerequisites
-    - setup
-    - Docker startup commands
-    - config explanation
-    - how to run tests
-    - how to view reports
-    - how to add new API tests
-    - how to add new Kafka assertions
-17. Add GitHub Actions pipeline that:
-    - installs dependencies
-    - starts Docker Compose services
-    - runs lint
-    - runs tests
-    - uploads Playwright and Allure reports as artifacts
+20. Add ESLint and Prettier.
+21. Add GitHub Actions and GitLab CI pipelines that:
+    - install dependencies
+    - start Docker Compose services
+    - wait for Kafka readiness
+    - wait for WireMock readiness
+    - run lint
+    - run test groups independently
+    - upload Playwright and Allure reports as artifacts
 
 Suggested project structure:
-- src/
+- app/src/
+  - clients/api/
+  - clients/db/
+  - db/queries/
+  - db/transactions/
+  - kafka/producer/
+  - kafka/consumer/
+  - schemas/api/
+  - schemas/kafka/
+  - schemas/contracts/
   - config/
-  - clients/
-  - kafka/
-  - schemas/
-  - fixtures/
-  - builders/
-  - mocks/
-  - assertions/
+  - logging/
   - utils/
-- tests/
-  - api/
+- tests/src/
+  - rest-functional/
   - kafka/
   - e2e/
-- docker/
+  - contracts/
+  - negative/
+  - retry-idempotency/
+  - smoke-performance/
+  - consumer-lag-timeout/
+  - assertions/api/
+  - assertions/kafka/
+  - assertions/database/
+  - fixtures/api/
+  - fixtures/kafka/
+  - fixtures/db/
+  - fixtures/contracts/
+  - builders/api/
+  - builders/kafka/
+  - builders/db/
+  - mocks/wiremock/
+  - reporting/
+  - config/
+  - utils/
+- docker/kafka/
+- docker/postgres/
+- docker/wiremock/mappings/
+- docker/wiremock/__files/
+- artifacts/
 - .github/workflows/
-- playwright.config.ts
+- .gitlab/
+- .env.example
 - docker-compose.yml
 - package.json
+- playwright.config.ts
+- tsconfig.json
 - README.md
 
 Design constraints:
 - Do not hardcode secrets, URLs, topic names, or credentials.
 - Use environment variables with sensible local defaults.
-- Make async Kafka assertions deterministic using polling and explicit timeouts.
+- Make async Kafka and database assertions deterministic using polling and explicit timeouts.
+- Keep generated logs and reports under artifacts.
 - Keep code simple and maintainable.
 - Avoid over-engineering.
 - Include comments only where they clarify non-obvious behavior.
@@ -100,27 +133,30 @@ Design constraints:
 - After implementation, run lint and tests, then fix any failures.
 
 Before coding:
-1. Propose the project structure.
+1. Use project-structure.md as the source of truth.
 2. Explain key design choices briefly.
-3. Then implement the framework.
+3. Then implement the framework in phases.
 4. After implementation, show the exact commands to run it locally.
 ```
 
-I’d run this in **phases**, not one monster task. First Codex prompt should be:
+Recommended phases:
 
 ```text
-Implement only the initial TypeScript Playwright API test framework skeleton with config management, linting, formatting, README, Docker Compose for Kafka and WireMock, and one sample REST API test. Do not implement all Kafka helpers yet. Make sure npm test and npm run lint pass.
+Phase 1:
+Implement only the initial TypeScript Playwright API test framework skeleton with config management, linting, formatting, README alignment, Docker Compose for Kafka/PostgreSQL/WireMock, and one sample REST API test. Do not implement all Kafka helpers yet. Make sure npm test and npm run lint pass.
 ```
 
-Then second prompt:
-
 ```text
+Phase 2:
 Add reusable Kafka producer and consumer utilities, JSON Schema validation with AJV, and one Kafka produce/consume test using the local Docker Compose Kafka service. Add clear polling and timeout behavior.
 ```
 
-Then third:
-
 ```text
-Add an end-to-end test that calls a REST API endpoint and validates the expected Kafka side-effect message. Add WireMock support for downstream mock APIs and document the flow in README.
+Phase 3:
+Add PostgreSQL query helpers, transaction cleanup helpers, and an end-to-end test that calls a REST API endpoint and validates the expected Kafka side-effect and DB state.
 ```
 
+```text
+Phase 4:
+Add WireMock support for downstream mock APIs, report attachments for API/Kafka/DB diagnostics, and CI pipelines for GitHub Actions and GitLab CI.
+```

@@ -3,16 +3,18 @@ Test Data Strategy:
 Use a hybrid test data approach:
 
 1. JSON fixtures
-   - Store reusable static payloads in src/fixtures/.
+   - Store reusable static payloads in tests/src/fixtures/.
    - Organize fixtures by domain and test type.
    - Example:
-     src/fixtures/users/valid-user.json
-     src/fixtures/users/invalid-user.json
-     src/fixtures/orders/valid-order.json
-     src/fixtures/kafka/order-created-event.json
+     tests/src/fixtures/api/users/valid-user.json
+     tests/src/fixtures/api/users/invalid-user.json
+     tests/src/fixtures/api/orders/valid-order.json
+     tests/src/fixtures/kafka/order-created-event.json
+     tests/src/fixtures/db/order-record.json
+     tests/src/fixtures/contracts/order-created.schema.json
 
 2. Builder pattern
-   - Store builders in src/builders/.
+   - Store builders in tests/src/builders/.
    - Builders should create valid default test objects.
    - Builders should allow field overrides.
    - Builders should support readable chaining.
@@ -35,3 +37,4 @@ Rules:
 - Builders may load base objects from JSON fixtures and override fields.
 - Keep test data reusable across REST, Kafka, DB, and E2E tests.
 - Avoid hardcoded magic values inside test files.
+- Keep app/framework code independent from test fixture data.

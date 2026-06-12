@@ -6,6 +6,10 @@ root
 │       │   ├── api
 │       │   └── db
 │       │
+│       ├── db
+│       │   ├── queries
+│       │   └── transactions
+│       │
 │       ├── kafka
 │       │   ├── producer
 │       │   └── consumer
@@ -48,21 +52,39 @@ root
 │       │   ├── kafka
 │       │   └── db
 │       │
+│       ├── mocks
+│       │   └── wiremock
+│       │
 │       ├── reporting
-|       |
+│       │
 │       ├── config
 │       │
 │       └── utils
 │
-│ 
-├── reports
-|
 ├── docker
+│   ├── kafka
+│   ├── postgres
+│   └── wiremock
+│       ├── mappings
+│       └── __files
 │
 ├── artifacts
+│   ├── logs
+│   ├── allure-results
+│   ├── allure-report
+│   ├── html-report
+│   ├── requests
+│   ├── responses
+│   └── kafka
 │
 ├── .github
+│   └── workflows
 │
 ├── .gitlab
 │
+├── .env.example
+├── docker-compose.yml
+├── package.json
+├── playwright.config.ts
+├── tsconfig.json
 └── README.md

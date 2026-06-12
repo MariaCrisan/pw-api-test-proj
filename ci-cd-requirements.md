@@ -21,14 +21,15 @@ Pipeline behavior:
 
 1. Start Docker Compose services.
 2. Wait for Kafka readiness.
-3. Wait for WireMock readiness.
-4. Run test suites independently.
-5. Publish Allure artifacts.
-6. Publish HTML report artifacts.
-7. Publish logs.
-8. Fail pipeline on test failures.
-9. Support environment variables for different environments.
-10. Allow execution of specific test groups via pipeline variables.
+3. Wait for PostgreSQL readiness.
+4. Wait for WireMock readiness.
+5. Run test suites independently.
+6. Publish Allure artifacts.
+7. Publish HTML report artifacts.
+8. Publish logs.
+9. Fail pipeline on test failures.
+10. Support environment variables for different environments.
+11. Allow execution of specific test groups via pipeline variables.
 
 Example execution matrix:
 
