@@ -38,58 +38,70 @@ This repository currently contains the framework requirements, target project st
 
 ```text
 root
-|
-+-- src
-|   +-- clients
-|   |   +-- api
-|   |   +-- db
-|   |
-|   +-- kafka
-|   |   +-- producer
-|   |   +-- consumer
-|   |   +-- assertions
-|   |
-|   +-- assertions
-|   |   +-- api
-|   |   +-- kafka
-|   |   +-- database
-|   |
-|   +-- schemas
-|   |   +-- api
-|   |   +-- kafka
-|   |   +-- contracts
-|   |
-|   +-- fixtures
-|   |   +-- api
-|   |   +-- kafka
-|   |   +-- db
-|   |   +-- contracts
-|   |
-|   +-- builders
-|   |   +-- api
-|   |   +-- kafka
-|   |   +-- db
-|   |
-|   +-- config
-|   +-- reporting
-|   +-- logging
-|   +-- utils
-|
-+-- tests
-|   +-- rest-functional
-|   +-- kafka
-|   +-- e2e
-|   +-- contracts
-|   +-- negative
-|   +-- retry-idempotency
-|   +-- smoke-performance
-|   +-- consumer-lag-timeout
-|
-+-- docker
-+-- artifacts
-+-- .github
-+-- .gitlab
-+-- README.md
+│
+├── app
+│   └── src
+│       ├── clients
+│       │   ├── api
+│       │   └── db
+│       │
+│       ├── kafka
+│       │   ├── producer
+│       │   └── consumer
+│       │
+│       ├── schemas
+│       │   ├── api
+│       │   ├── kafka
+│       │   └── contracts
+│       │
+│       ├── config
+│       │
+│       ├── logging
+│       │
+│       └── utils
+│
+├── tests
+│   └── src
+│       ├── rest-functional
+│       ├── kafka
+│       ├── e2e
+│       ├── contracts
+│       ├── negative
+│       ├── retry-idempotency
+│       ├── smoke-performance
+│       ├── consumer-lag-timeout
+│       │
+│       ├── assertions
+│       │   ├── api
+│       │   ├── kafka
+│       │   └── database
+│       │
+│       ├── fixtures
+│       │   ├── api
+│       │   ├── kafka
+│       │   ├── db
+│       │   └── contracts
+│       │
+│       ├── builders
+│       │   ├── api
+│       │   ├── kafka
+│       │   └── db
+│       │
+│       ├── config
+│       │
+│       └── utils
+│
+├── reports
+│
+├── docker
+│
+├── artifacts
+│
+├── .github
+│
+├── .gitlab
+│
+└── README.md
 ```
 
 ## Prerequisites
@@ -198,8 +210,9 @@ npm run format
 
 Use a hybrid test data approach:
 
-- Store reusable static payloads in `src/fixtures`.
-- Store fluent data builders in `src/builders`.
+- Store reusable static payloads in `tests/src/fixtures`.
+- Store fluent data builders in `tests/src/builders`.
+- Store test-specific utilities in `tests/src/utils`.
 - Use Faker for dynamic values such as emails, IDs, names, timestamps, addresses, and correlation IDs.
 - Use seeded Faker where deterministic data is required.
 
@@ -213,22 +226,22 @@ Rules:
 
 ## Adding REST API Tests
 
-1. Add or update the reusable API client under `src/clients/api`.
-2. Add request or response schemas under `src/schemas/api`.
-3. Add static payloads under `src/fixtures/api` when needed.
-4. Add builders under `src/builders/api` for dynamic payloads.
-5. Add reusable assertions under `src/assertions/api`.
-6. Add the test under the relevant folder in `tests`.
+1. Add or update the reusable API client under `app/src/clients/api`.
+2. Add request or response schemas under `app/src/schemas/api`.
+3. Add static payloads under `tests/src/fixtures/api` when needed.
+4. Add builders under `tests/src/builders/api` for dynamic payloads.
+5. Add reusable assertions under `tests/src/assertions/api`.
+6. Add the test under the relevant folder in `tests/src`.
 7. Run the specific test group before opening a pull request.
 
 ## Adding Kafka Assertions
 
-1. Add producer logic under `src/kafka/producer`.
-2. Add consumer logic under `src/kafka/consumer`.
-3. Add polling and timeout assertions under `src/kafka/assertions` or `src/assertions/kafka`.
-4. Add event schemas under `src/schemas/kafka`.
-5. Add reusable Kafka payload fixtures under `src/fixtures/kafka`.
-6. Add Kafka message builders under `src/builders/kafka`.
+1. Add producer logic under `app/src/kafka/producer`.
+2. Add consumer logic under `app/src/kafka/consumer`.
+3. Add polling and timeout assertions under `tests/src/assertions/kafka`.
+4. Add event schemas under `app/src/schemas/kafka`.
+5. Add reusable Kafka payload fixtures under `tests/src/fixtures/kafka`.
+6. Add Kafka message builders under `tests/src/builders/kafka`.
 7. Attach consumed message payloads to test reports for failure diagnostics.
 
 ## Database Validation
@@ -319,7 +332,7 @@ Pipeline behavior:
 ## Design Rules
 
 - Keep tests readable as business scenarios.
-- Put reusable plumbing in `src`, not inside test files.
+- Keep reusable app/framework helpers in `app/src` and test-specific helpers in `tests/src`.
 - Keep helpers generic enough for reuse without over-engineering.
 - Use strict TypeScript.
 - Make Kafka and database assertions deterministic with explicit polling and timeout behavior.

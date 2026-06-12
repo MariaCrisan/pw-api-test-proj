@@ -1,54 +1,62 @@
 root
 │
-├── src
-│   ├── clients
-│   │   ├── api
-│   │   └── db
-│   │
-│   ├── kafka
-│   │   ├── producer
-│   │   ├── consumer
-│   │   └── assertions
-│   │
-│   ├── assertions
-│   │   ├── api
-│   │   ├── kafka
-│   │   └── database
-│   │
-│   ├── schemas
-│   │   ├── api
-│   │   ├── kafka
-│   │   └── contracts
-│   │
-│   ├── fixtures
-│   │   ├── api
-│   │   ├── kafka
-│   │   ├── db
-│   │   └── contracts
-│   │
-│   ├── builders
-│   │   ├── api
-│   │   ├── kafka
-│   │   └── db
-│   │
-│   ├── config
-│   │
-│   ├── reporting
-│   │
-│   ├── logging
-│   │
-│   └── utils
+├── app
+│   └── src
+│       ├── clients
+│       │   ├── api
+│       │   └── db
+│       │
+│       ├── kafka
+│       │   ├── producer
+│       │   └── consumer
+│       │
+│       ├── schemas
+│       │   ├── api
+│       │   ├── kafka
+│       │   └── contracts
+│       │
+│       ├── config
+│       │
+│       ├── logging
+│       │
+│       └── utils
 │
 ├── tests
-│   ├── rest-functional
-│   ├── kafka
-│   ├── e2e
-│   ├── contracts
-│   ├── negative
-│   ├── retry-idempotency
-│   ├── smoke-performance
-│   └── consumer-lag-timeout
+│   └── src
+│       ├── rest-functional
+│       ├── kafka
+│       ├── e2e
+│       ├── contracts
+│       ├── negative
+│       ├── retry-idempotency
+│       ├── smoke-performance
+│       ├── consumer-lag-timeout
+│       │
+│       ├── assertions
+│       │   ├── api
+│       │   ├── kafka
+│       │   └── database
+│       │
+│       ├── fixtures
+│       │   ├── api
+│       │   ├── kafka
+│       │   ├── db
+│       │   └── contracts
+│       │
+│       ├── builders
+│       │   ├── api
+│       │   ├── kafka
+│       │   └── db
+│       │
+│       ├── reporting
+|       |
+│       ├── config
+│       │
+│       └── utils
 │
+│ 
+├── reports
+|
 ├── docker
 │
 ├── artifacts
