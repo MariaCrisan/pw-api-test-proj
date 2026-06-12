@@ -21,8 +21,15 @@ root
 │   │   └── contracts
 │   │
 │   ├── fixtures
+│   │   ├── api
+│   │   ├── kafka
+│   │   ├── db
+│   │   └── contracts
 │   │
 │   ├── builders
+│   │   ├── api
+│   │   ├── kafka
+│   │   └── db
 │   │
 │   ├── config
 │   │
