@@ -44,12 +44,18 @@ export class KafkaJsonProducer {
       ],
     });
 
-    return metadata.map((record) => ({
-      topic,
-      partition: record.partition,
-      offset: record.baseOffset,
-      timestamp,
-    }));
+    return metadata.map((record) => {
+      if (record.baseOffset === undefined) {
+        throw new Error(`Kafka did not return an offset after producing to topic "${topic}".`);
+      }
+
+      return {
+        topic,
+        partition: record.partition,
+        offset: record.baseOffset,
+        timestamp,
+      };
+    });
   }
 
   private assertConnected(): void {
