@@ -12,15 +12,15 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 
 ## Phase 0 — Architecture and decisions
 
-- [ ] Create `docs/architecture.md` with component boundaries and the API → Kafka → PostgreSQL flow.
-- [ ] Create `docs/conventions.md` covering naming, file organization, TypeScript, linting, formatting, and test naming.
-- [ ] Create `docs/testing-strategy.md` consolidating the approved test layers and execution priorities.
+- [x] Create `docs/architecture.md` with component boundaries and the API → Kafka → PostgreSQL flow.
+- [x] Create `docs/conventions.md` covering naming, file organization, TypeScript, linting, formatting, and test naming.
+- [x] Create `docs/testing-strategy.md` consolidating the approved test layers and execution priorities.
 - [ ] Confirm the sample business domain, API endpoints, Kafka topics/events, and expected PostgreSQL tables.
-- [ ] Decide Kafka image/topology, broker configuration, topic creation, consumer-group strategy, and readiness checks.
-- [ ] Decide PostgreSQL schema/bootstrap approach and transactional cleanup strategy.
-- [ ] Decide environment configuration for `local`, `dev`, and `stage`.
-- [ ] Decide supported Node.js and npm versions.
-- [ ] Define the minimum local and CI acceptance criteria for the first end-to-end test.
+- [x] Decide Kafka image/topology, broker configuration, topic creation, consumer-group strategy, and readiness checks.
+- [x] Decide PostgreSQL schema/bootstrap approach and transactional cleanup strategy.
+- [x] Decide environment configuration for `local`, `dev`, and `stage`.
+- [x] Decide supported Node.js and npm versions.
+- [x] Define the minimum local and CI acceptance criteria for the first end-to-end test.
 
 ## Phase 1 — Walking skeleton
 

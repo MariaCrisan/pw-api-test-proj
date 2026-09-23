@@ -37,4 +37,4 @@ await consumer.disconnect();
 await producer.disconnect();
 ```
 
-Install `kafkajs` before compiling these helpers. The root Node/Playwright scaffold and integration tests are still pending.
+Install dependencies with `npm install` before compiling these helpers. The TypeScript/Playwright scaffold is available; Kafka broker integration tests are the next Kafka milestone.

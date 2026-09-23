@@ -6,7 +6,7 @@ import {
   KafkaJsonConsumer,
   KafkaJsonProducer,
   loadKafkaConnectionConfig,
-} from '../../../kafka';
+} from '../../../app/src/kafka';
 
 test.describe('Kafka helpers', () => {
   test('loads broker and SASL configuration from environment variables', () => {

@@ -4,7 +4,7 @@ TypeScript API test automation framework for REST APIs with Kafka event validati
 
 ## Project Status
 
-Phase 1 is implemented: the TypeScript/Playwright scaffold, local Docker Compose services, validated runtime configuration, API client, code-quality configuration, and a sample REST API test are available. Kafka helpers are implemented under `kafka`; PostgreSQL assertions, schema validation, WireMock test helpers, reporting attachments, and CI pipelines remain planned work.
+Phase 1 is implemented: the TypeScript/Playwright scaffold, local Docker Compose services, validated runtime configuration, API client, code-quality configuration, and a sample REST API test are available. Kafka helpers are implemented under `app/src/kafka`; PostgreSQL assertions, schema validation, WireMock test helpers, reporting attachments, and CI pipelines remain planned work.
 
 ## Goals
 
