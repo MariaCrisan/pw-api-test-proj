@@ -15,5 +15,5 @@
     "types": ["node", "@playwright/test"],
     "noEmit": true
   },
-  "include": ["kafka/**/*.ts", "tests/**/*.ts"]
+  "include": ["app/**/*.ts", "kafka/**/*.ts", "tests/**/*.ts", "playwright.config.ts"]
 }

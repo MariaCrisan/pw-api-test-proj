@@ -60,7 +60,9 @@ function loadSaslConfig(environment: NodeJS.ProcessEnv): SASLOptions | undefined
   const password = environment.KAFKA_SASL_PASSWORD;
 
   if (!username || !password) {
-    throw new Error('KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD are required when SASL is enabled.');
+    throw new Error(
+      'KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD are required when SASL is enabled.',
+    );
   }
 
   return { mechanism, username, password } as SASLOptions;

@@ -43,7 +43,9 @@ export class KafkaJsonConsumer {
     this.assertConnected();
 
     if (this.running) {
-      throw new Error('KafkaJsonConsumer supports one wait operation per instance. Create a new consumer for another wait.');
+      throw new Error(
+        'KafkaJsonConsumer supports one wait operation per instance. Create a new consumer for another wait.',
+      );
     }
 
     this.running = true;
@@ -74,14 +76,18 @@ export class KafkaJsonConsumer {
         .catch((error: unknown) => {
           clearTimeout(timeout);
           const reason = error instanceof Error ? error.message : String(error);
-          reject(new Error(`Kafka consumer failed while waiting for ${expectedDescription}: ${reason}`));
+          reject(
+            new Error(`Kafka consumer failed while waiting for ${expectedDescription}: ${reason}`),
+          );
         });
     });
   }
 
   private assertConnected(): void {
     if (!this.connected) {
-      throw new Error('KafkaJsonConsumer is not connected. Call connect() before waitForMessage().');
+      throw new Error(
+        'KafkaJsonConsumer is not connected. Call connect() before waitForMessage().',
+      );
     }
   }
 }

@@ -4,9 +4,7 @@ TypeScript API test automation framework for REST APIs with Kafka event validati
 
 ## Project Status
 
-This repository currently contains the framework requirements, target project structure, test strategy, and implementation plan. The source files, Docker Compose setup, Playwright configuration, npm scripts, and CI pipelines still need to be added.
-
-Commands in this README describe the intended workflow once the initial Node/Playwright scaffold exists.
+Phase 1 is implemented: the TypeScript/Playwright scaffold, local Docker Compose services, validated runtime configuration, API client, code-quality configuration, and a sample REST API test are available. Kafka helpers are implemented under `kafka`; PostgreSQL assertions, schema validation, WireMock test helpers, reporting attachments, and CI pipelines remain planned work.
 
 ## Goals
 
@@ -21,22 +19,22 @@ Commands in this README describe the intended workflow once the initial Node/Pla
 
 ## Tech Stack
 
-| Area | Tools |
-| --- | --- |
-| Language | TypeScript |
-| Runtime | Node.js, npm |
-| Test runner | Playwright Test |
-| API testing | Playwright API Request Context |
-| Kafka | KafkaJS, Docker Compose |
-| Database | PostgreSQL, node-postgres `pg` |
-| Schema validation | AJV, JSON Schema |
-| Mocking | WireMock |
-| Test data | Faker |
-| Reporting | Allure, Playwright HTML Report |
-| Logging | Pino |
-| Configuration | dotenv, zod |
-| Code quality | ESLint, Prettier |
-| CI/CD | GitHub Actions, GitLab CI |
+| Area              | Tools                          |
+| ----------------- | ------------------------------ |
+| Language          | TypeScript                     |
+| Runtime           | Node.js, npm                   |
+| Test runner       | Playwright Test                |
+| API testing       | Playwright API Request Context |
+| Kafka             | KafkaJS, Docker Compose        |
+| Database          | PostgreSQL, node-postgres `pg` |
+| Schema validation | AJV, JSON Schema               |
+| Mocking           | WireMock                       |
+| Test data         | Faker                          |
+| Reporting         | Allure, Playwright HTML Report |
+| Logging           | Pino                           |
+| Configuration     | dotenv, zod                    |
+| Code quality      | ESLint, Prettier               |
+| CI/CD             | GitHub Actions, GitLab CI      |
 
 ## Target Project Structure
 
@@ -156,7 +154,7 @@ root
 - PostgreSQL access for database validation tests
 - Allure CLI, if viewing Allure reports locally outside npm scripts
 
-## Planned Setup
+## Local Setup
 
 Install dependencies:
 
@@ -173,7 +171,8 @@ cp .env.example .env
 Start local dependencies:
 
 ```bash
-docker compose up -d
+npm run services:up
+npm run services:wait
 ```
 
 Expected local services:
@@ -186,7 +185,7 @@ Expected local services:
 Stop local dependencies:
 
 ```bash
-docker compose down
+npm run services:down
 ```
 
 ## Configuration
@@ -215,7 +214,7 @@ Recommended environments:
 - `dev`
 - `stage`
 
-## Planned Test Commands
+## Test Commands
 
 Expected npm scripts:
 
@@ -240,16 +239,16 @@ npm run format
 
 ## Test Types
 
-| Test type | Purpose |
-| --- | --- |
-| REST functional | Validate status codes, response bodies, headers, and schemas. |
-| Kafka | Produce and consume messages, then validate keys, headers, payloads, timestamps, and schemas. |
-| E2E | Call REST APIs and validate Kafka side effects and PostgreSQL state. |
-| Contracts | Validate REST and Kafka contracts using JSON Schema or OpenAPI. |
-| Negative | Validate invalid payloads, missing fields, auth errors, malformed Kafka messages, and error responses. |
-| Retry and idempotency | Validate duplicate handling, retries, and no duplicate records or events. |
-| Smoke and performance | Run lightweight CI checks and optional threshold-based performance checks. |
-| Consumer lag and timeout | Validate delayed consumers, timeout behavior, polling, and clear failure messages. |
+| Test type                | Purpose                                                                                                |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| REST functional          | Validate status codes, response bodies, headers, and schemas.                                          |
+| Kafka                    | Produce and consume messages, then validate keys, headers, payloads, timestamps, and schemas.          |
+| E2E                      | Call REST APIs and validate Kafka side effects and PostgreSQL state.                                   |
+| Contracts                | Validate REST and Kafka contracts using JSON Schema or OpenAPI.                                        |
+| Negative                 | Validate invalid payloads, missing fields, auth errors, malformed Kafka messages, and error responses. |
+| Retry and idempotency    | Validate duplicate handling, retries, and no duplicate records or events.                              |
+| Smoke and performance    | Run lightweight CI checks and optional threshold-based performance checks.                             |
+| Consumer lag and timeout | Validate delayed consumers, timeout behavior, polling, and clear failure messages.                     |
 
 ## Test Data Strategy
 

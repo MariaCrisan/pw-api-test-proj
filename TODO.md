@@ -24,15 +24,15 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 
 ## Phase 1 — Walking skeleton
 
-- [ ] Create `package.json` and install TypeScript, Playwright Test, KafkaJS, `pg`, AJV, WireMock support, Faker, Pino, dotenv, zod, Allure, ESLint, and Prettier.
-- [ ] Create strict `tsconfig.json`, `playwright.config.ts`, ESLint configuration, Prettier configuration, and `.env.example`.
-- [ ] Create the target `app/src` and `tests/src` directory structure.
-- [ ] Add typed environment/config loading with validation and safe local defaults.
-- [ ] Add `docker-compose.yml` for Kafka, PostgreSQL, and WireMock; add Schema Registry only if required by the chosen Kafka setup.
-- [ ] Add service health/readiness checks for Kafka, PostgreSQL, and WireMock.
-- [ ] Add the first reusable API request client and one sample REST API happy-path test.
-- [ ] Add initial npm scripts: `test`, `test:api`, `lint`, `format`, and report commands.
-- [ ] Verify the initial test and lint commands locally.
+- [x] Create `package.json` and install TypeScript, Playwright Test, KafkaJS, `pg`, AJV, WireMock support, Faker, Pino, dotenv, zod, Allure, ESLint, and Prettier.
+- [x] Create strict `tsconfig.json`, `playwright.config.ts`, ESLint configuration, Prettier configuration, and `.env.example`.
+- [x] Create the target `app/src` and `tests/src` directory structure.
+- [x] Add typed environment/config loading with validation and safe local defaults.
+- [x] Add `docker-compose.yml` for Kafka, PostgreSQL, and WireMock; add Schema Registry only if required by the chosen Kafka setup.
+- [x] Add service health/readiness checks for Kafka, PostgreSQL, and WireMock.
+- [x] Add the first reusable API request client and one sample REST API happy-path test.
+- [x] Add initial npm scripts: `test`, `test:api`, `lint`, `format`, and report commands.
+- [x] Verify the initial test and lint commands locally.
 
 ## Phase 2 — Core framework
 
@@ -134,4 +134,3 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 - [ ] Kubernetes deployment support.
 - [ ] Dedicated performance frameworks such as k6 or Gatling.
 - [ ] AI-generated test cases.
-

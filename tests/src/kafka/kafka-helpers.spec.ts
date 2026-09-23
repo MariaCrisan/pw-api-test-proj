@@ -123,9 +123,9 @@ test.describe('Kafka helpers', () => {
     } as unknown as Kafka;
     const kafkaConsumer = new KafkaJsonConsumer(kafka, 'kafka-helper-test');
 
-    await expect(
-      kafkaConsumer.waitForMessage({ topic: 'orders.created' }),
-    ).rejects.toThrow('KafkaJsonConsumer is not connected');
+    await expect(kafkaConsumer.waitForMessage({ topic: 'orders.created' })).rejects.toThrow(
+      'KafkaJsonConsumer is not connected',
+    );
 
     await kafkaConsumer.connect();
     const received = await kafkaConsumer.waitForMessage<{ orderId: string }>({

@@ -5,7 +5,9 @@ import type { JsonValue, KafkaEventEnvelope } from './types';
 export function createKafkaEventEnvelope<TPayload extends JsonValue>(
   eventType: string,
   payload: TPayload,
-  options: Partial<Pick<KafkaEventEnvelope<TPayload>, 'eventId' | 'correlationId' | 'occurredAt' | 'version'>> = {},
+  options: Partial<
+    Pick<KafkaEventEnvelope<TPayload>, 'eventId' | 'correlationId' | 'occurredAt' | 'version'>
+  > = {},
 ): KafkaEventEnvelope<TPayload> {
   if (!eventType.trim()) {
     throw new Error('eventType must not be empty.');

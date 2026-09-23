@@ -1,0 +1,10 @@
+artifacts/
+node_modules/
+package-lock.json
+plan/
+playwright-report/
+test-results/
+test-doc/
+kafka/notes.md
+pw-api-test-proj.code-workspace
+tech-stack.yml
