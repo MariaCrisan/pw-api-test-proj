@@ -1,0 +1,7 @@
+{
+  "order_id": "fixture-order-001",
+  "customer_id": "fixture-customer-001",
+  "total": 49.99,
+  "currency": "EUR",
+  "test_marker": "fixture-order"
+}

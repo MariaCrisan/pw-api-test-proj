@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["eventId", "eventType", "occurredAt", "correlationId", "version", "payload"],
+  "properties": {
+    "eventId": { "type": "string", "minLength": 1 },
+    "eventType": { "const": "order.created" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "correlationId": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "minLength": 1 },
+    "payload": {
+      "type": "object",
+      "required": ["orderId", "customerId", "total", "currency", "testMarker"],
+      "properties": {
+        "orderId": { "type": "string", "minLength": 1 },
+        "customerId": { "type": "string", "minLength": 1 },
+        "total": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "minLength": 3 },
+        "testMarker": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

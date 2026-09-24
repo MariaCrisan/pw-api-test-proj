@@ -1,0 +1,19 @@
+{
+  "orderId": "fixture-order-001",
+  "customer": {
+    "customerId": "fixture-customer-001",
+    "email": "fixture.customer@example.test",
+    "firstName": "Fixture",
+    "lastName": "Customer"
+  },
+  "items": [
+    {
+      "sku": "SKU-FIXTURE-1",
+      "quantity": 1,
+      "unitPrice": 49.99
+    }
+  ],
+  "currency": "EUR",
+  "total": 49.99,
+  "testMarker": "fixture-order"
+}
