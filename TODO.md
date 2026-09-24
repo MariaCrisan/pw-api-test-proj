@@ -36,18 +36,18 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 
 ## Phase 2 — Core framework
 
-- [ ] Implement reusable API clients under `app/src/clients/api`.
-- [ ] Implement the PostgreSQL client under `app/src/clients/db`.
-- [ ] Implement query helpers under `app/src/db/queries`.
-- [ ] Implement transaction, cleanup, polling, and timeout helpers under `app/src/db/transactions`.
-- [ ] Implement Kafka producer utilities under `app/src/kafka/producer`.
-- [ ] Implement Kafka consumer utilities under `app/src/kafka/consumer`.
-- [ ] Add deterministic Kafka polling, filtering, explicit timeouts, and consumer cleanup.
-- [ ] Add shared logging and correlation-ID utilities under `app/src/logging` and `app/src/utils`.
-- [ ] Add JSON Schema validation with AJV for API, Kafka, and contract schemas.
+- [x] Implement reusable API clients under `app/src/clients/api`.
+- [x] Implement the PostgreSQL client under `app/src/clients/db`.
+- [x] Implement query helpers under `app/src/db/queries`.
+- [x] Implement transaction, cleanup, polling, and timeout helpers under `app/src/db/transactions`.
+- [x] Implement Kafka producer utilities under `app/src/kafka/producer`.
+- [x] Implement Kafka consumer utilities under `app/src/kafka/consumer`.
+- [x] Add deterministic Kafka polling, filtering, explicit timeouts, and consumer cleanup.
+- [x] Add shared logging and correlation-ID utilities under `app/src/logging` and `app/src/utils`.
+- [x] Add JSON Schema validation with AJV for API, Kafka, and contract schemas.
 - [ ] Add schema files under `app/src/schemas/api`, `app/src/schemas/kafka`, and `app/src/schemas/contracts`.
-- [ ] Add reusable API, Kafka, database, and schema assertions under `tests/src/assertions`.
-- [ ] Add Allure/reporting helper foundations under `tests/src/reporting`.
+- [x] Add reusable API, Kafka, database, and schema assertions under `tests/src/assertions`.
+- [x] Add Allure/reporting helper foundations under `tests/src/reporting`.
 
 ## Phase 3 — Test data and fixtures
 
