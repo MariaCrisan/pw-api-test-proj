@@ -1,0 +1,53 @@
+{
+  "name": "pw-api-test-proj",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TypeScript Playwright API test automation framework with Kafka and PostgreSQL validation.",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:api": "playwright test tests/src/rest-functional",
+    "test:kafka": "playwright test tests/src/kafka",
+    "test:e2e": "playwright test tests/src/e2e",
+    "test:contracts": "playwright test tests/src/contracts",
+    "test:negative": "playwright test tests/src/negative",
+    "test:retry-idempotency": "playwright test tests/src/retry-idempotency",
+    "test:smoke-performance": "playwright test tests/src/smoke-performance",
+    "test:consumer-lag-timeout": "playwright test tests/src/consumer-lag-timeout",
+    "services:up": "docker compose up -d",
+    "services:wait": "node scripts/wait-for-services.mjs",
+    "services:down": "docker compose down",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "report": "playwright show-report artifacts/html-report",
+    "report:allure": "allure generate artifacts/allure-results --clean --output artifacts/allure-report"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^9.6.0",
+    "ajv": "^8.17.1",
+    "dotenv": "^16.5.0",
+    "kafkajs": "^2.2.4",
+    "pg": "^8.16.0",
+    "pino": "^9.7.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.53.0",
+    "@types/node": "^22.15.0",
+    "@types/pg": "^8.15.0",
+    "@typescript-eslint/eslint-plugin": "^8.33.0",
+    "@typescript-eslint/parser": "^8.33.0",
+    "allure-commandline": "^2.34.0",
+    "allure-playwright": "^3.2.1",
+    "eslint": "^9.28.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-import": "^2.31.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3"
+  }
+}
