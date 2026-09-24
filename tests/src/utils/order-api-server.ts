@@ -9,14 +9,25 @@ export interface OrderApiServer {
 
 export interface OrderApiServerOptions {
   onOrderAccepted?: (order: Order, correlationId: string) => Promise<void>;
+  requiredAuthorization?: string;
+  idempotent?: boolean;
 }
 
 export async function startOrderApiServer(
   options: OrderApiServerOptions = {},
 ): Promise<OrderApiServer> {
+  const acceptedOrders = new Map<string, { correlationId: string }>();
   const server = createServer(async (request, response) => {
     if (request.method !== 'POST' || request.url !== '/orders') {
       sendJson(response, 404, { error: 'Not found' });
+      return;
+    }
+
+    if (
+      options.requiredAuthorization &&
+      request.headers.authorization !== options.requiredAuthorization
+    ) {
+      sendJson(response, 401, { error: 'Unauthorized' });
       return;
     }
 
@@ -28,9 +39,24 @@ export async function startOrderApiServer(
       }
 
       const correlationId = request.headers['x-correlation-id']?.toString() ?? order.testMarker;
+      const existingOrder = options.idempotent ? acceptedOrders.get(order.orderId) : undefined;
+      if (existingOrder) {
+        sendJson(response, 201, {
+          orderId: order.orderId,
+          correlationId: existingOrder.correlationId,
+          status: 'accepted',
+        });
+        return;
+      }
+
       await options.onOrderAccepted?.(order, correlationId);
+      if (options.idempotent) acceptedOrders.set(order.orderId, { correlationId });
       sendJson(response, 201, { orderId: order.orderId, correlationId, status: 'accepted' });
     } catch (error) {
+      if (error instanceof SyntaxError) {
+        sendJson(response, 400, { error: 'Malformed JSON' });
+        return;
+      }
       sendJson(response, 500, {
         error: error instanceof Error ? error.message : 'Order processing failed',
       });

@@ -70,16 +70,16 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 
 ## Phase 5 — Test type coverage
 
-- [ ] Add at least one example in `tests/src/rest-functional`.
-- [ ] Add at least one example in `tests/src/kafka`.
-- [ ] Add at least one example in `tests/src/e2e`.
-- [ ] Add REST and Kafka contract tests in `tests/src/contracts`.
-- [ ] Add invalid payload, missing-field, authentication, and malformed-message tests in `tests/src/negative`.
-- [ ] Add retry, duplicate request, duplicate event, and idempotency tests in `tests/src/retry-idempotency`.
-- [ ] Add lightweight smoke and threshold-based performance checks in `tests/src/smoke-performance`.
-- [ ] Add consumer lag, delayed-consumer, timeout, and diagnostic-message tests in `tests/src/consumer-lag-timeout`.
-- [ ] Add a short README to each test-type directory.
-- [ ] Add independent npm scripts for every test group.
+- [x] Add at least one example in `tests/src/rest-functional`.
+- [x] Add at least one example in `tests/src/kafka`.
+- [x] Add at least one example in `tests/src/e2e`.
+- [x] Add REST and Kafka contract tests in `tests/src/contracts`.
+- [x] Add invalid payload, missing-field, authentication, and malformed-message tests in `tests/src/negative`.
+- [x] Add retry, duplicate request, duplicate event, and idempotency tests in `tests/src/retry-idempotency`.
+- [x] Add lightweight smoke and threshold-based performance checks in `tests/src/smoke-performance`.
+- [x] Add consumer lag, delayed-consumer, timeout, and diagnostic-message tests in `tests/src/consumer-lag-timeout`.
+- [x] Add a short README to each test-type directory.
+- [x] Add independent npm scripts for every test group.
 
 ## Phase 6 — WireMock, reporting, and diagnostics
 
