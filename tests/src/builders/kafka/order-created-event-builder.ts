@@ -8,7 +8,10 @@ export class OrderCreatedEventBuilder {
   private readonly faker;
   private payload: OrderCreatedPayload;
   private options: Partial<
-    Pick<KafkaEventEnvelope<OrderCreatedPayload>, 'eventId' | 'correlationId' | 'occurredAt' | 'version'>
+    Pick<
+      KafkaEventEnvelope<OrderCreatedPayload>,
+      'eventId' | 'correlationId' | 'occurredAt' | 'version'
+    >
   > = {};
 
   private constructor(options: TestDataOptions = {}) {
@@ -26,7 +29,13 @@ export class OrderCreatedEventBuilder {
     return new OrderCreatedEventBuilder(options);
   }
 
-  public forOrder(order: { orderId: string; customer: { customerId: string }; total: number; currency: string; testMarker: string }): this {
+  public forOrder(order: {
+    orderId: string;
+    customer: { customerId: string };
+    total: number;
+    currency: string;
+    testMarker: string;
+  }): this {
     this.payload = {
       ...this.payload,
       orderId: order.orderId,
@@ -38,7 +47,11 @@ export class OrderCreatedEventBuilder {
     return this;
   }
 
-  public withPayload(payload: Partial<OrderCreatedPayload>): this {
+  public withPayload(
+    payload: Partial<
+      Pick<OrderCreatedPayload, 'orderId' | 'customerId' | 'total' | 'currency' | 'testMarker'>
+    >,
+  ): this {
     this.payload = { ...this.payload, ...payload };
     return this;
   }

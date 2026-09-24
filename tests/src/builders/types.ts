@@ -1,4 +1,4 @@
-import type { KafkaEventEnvelope } from '../../../app/src/kafka/types';
+import type { JsonValue, KafkaEventEnvelope } from '../../../app/src/kafka/types';
 
 export interface Customer {
   customerId: string;
@@ -22,13 +22,14 @@ export interface Order {
   testMarker: string;
 }
 
-export type OrderCreatedPayload = {
+export interface OrderCreatedPayload {
+  [key: string]: JsonValue;
   orderId: string;
   customerId: string;
   total: number;
   currency: string;
   testMarker: string;
-};
+}
 
 export type OrderCreatedEvent = KafkaEventEnvelope<OrderCreatedPayload>;
 

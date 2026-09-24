@@ -2,6 +2,7 @@ export type JsonValue =
   boolean | number | string | null | JsonValue[] | { [key: string]: JsonValue };
 
 export interface KafkaEventEnvelope<TPayload extends JsonValue = JsonValue> {
+  [key: string]: JsonValue;
   eventId: string;
   eventType: string;
   occurredAt: string;
