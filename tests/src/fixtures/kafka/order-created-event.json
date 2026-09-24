@@ -1,0 +1,14 @@
+{
+  "eventId": "fixture-event-001",
+  "eventType": "order.created",
+  "occurredAt": "2025-01-01T00:00:00.000Z",
+  "correlationId": "fixture-correlation-001",
+  "version": "1",
+  "payload": {
+    "orderId": "fixture-order-001",
+    "customerId": "fixture-customer-001",
+    "total": 49.99,
+    "currency": "EUR",
+    "testMarker": "fixture-order"
+  }
+}

@@ -51,12 +51,12 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 
 ## Phase 3 — Test data and fixtures
 
-- [ ] Add reusable API, Kafka, database, and contract fixtures under `tests/src/fixtures`.
-- [ ] Add API, Kafka, and database builders under `tests/src/builders`.
-- [ ] Add Faker-based unique data generation.
-- [ ] Add seeded Faker support for deterministic scenarios.
-- [ ] Ensure test files do not contain large inline payloads or hardcoded magic values.
-- [ ] Add cleanup and isolation rules for generated test data.
+- [x] Add reusable API, Kafka, database, and contract fixtures under `tests/src/fixtures`.
+- [x] Add API, Kafka, and database builders under `tests/src/builders`.
+- [x] Add Faker-based unique data generation.
+- [x] Add seeded Faker support for deterministic scenarios.
+- [x] Ensure test files do not contain large inline payloads or hardcoded magic values.
+- [x] Add cleanup and isolation rules for generated test data.
 
 ## Phase 4 — First complete integration flow
 
