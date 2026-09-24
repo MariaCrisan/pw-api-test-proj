@@ -230,6 +230,17 @@ npm run test:smoke-performance
 npm run test:consumer-lag-timeout
 ```
 
+The Kafka and end-to-end tests are opt-in so the framework-only suite remains runnable without Docker. After starting and waiting for the local services, run them from PowerShell with:
+
+```powershell
+$env:RUN_INTEGRATION_TESTS = 'true'
+npm run test:kafka
+npm run test:e2e
+Remove-Item Env:RUN_INTEGRATION_TESTS
+```
+
+The sample order flow posts an order to a test API boundary, consumes the resulting `order.created.integration` Kafka event, and polls PostgreSQL for the persisted row. Each run creates a unique marker and removes matching rows during cleanup.
+
 Code quality scripts:
 
 ```bash

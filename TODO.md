@@ -60,12 +60,12 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 
 ## Phase 4 — First complete integration flow
 
-- [ ] Implement one REST API happy-path test.
-- [ ] Implement one REST API negative/error-path test.
-- [ ] Implement one API response JSON Schema validation test.
-- [ ] Implement one Kafka produce/consume test with payload and schema assertions.
-- [ ] Implement the critical API → Kafka → PostgreSQL end-to-end test.
-- [ ] Add database polling for eventual consistency and verify no duplicate records/events where relevant.
+- [x] Implement one REST API happy-path test.
+- [x] Implement one REST API negative/error-path test.
+- [x] Implement one API response JSON Schema validation test.
+- [x] Implement one Kafka produce/consume test with payload and schema assertions.
+- [x] Implement the critical API → Kafka → PostgreSQL end-to-end test.
+- [x] Add database polling for eventual consistency and verify no duplicate records/events where relevant.
 - [ ] Make the complete flow runnable locally with `npm test`.
 
 ## Phase 5 — Test type coverage
