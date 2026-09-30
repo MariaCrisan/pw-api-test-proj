@@ -19,7 +19,13 @@ export class OrderRecordBuilder {
     return new OrderRecordBuilder(options);
   }
 
-  public forOrder(order: { orderId: string; customer: { customerId: string }; total: number; currency: string; testMarker: string }): this {
+  public forOrder(order: {
+    orderId: string;
+    customer: { customerId: string };
+    total: number;
+    currency: string;
+    testMarker: string;
+  }): this {
     this.record = {
       order_id: order.orderId,
       customer_id: order.customer.customerId,

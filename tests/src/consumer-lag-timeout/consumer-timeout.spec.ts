@@ -16,7 +16,9 @@ test('reports a useful timeout when no matching event arrives', async () => {
 
   await expect(
     kafkaConsumer.waitForMessage({ topic, correlationId, timeoutMs: 25 }),
-  ).rejects.toThrow(`Timed out after 25ms waiting for a Kafka message on topic "${topic}" with correlation ID "${correlationId}".`);
+  ).rejects.toThrow(
+    `Timed out after 25ms waiting for a Kafka message on topic "${topic}" with correlation ID "${correlationId}".`,
+  );
 
   await kafkaConsumer.disconnect();
 });
@@ -61,6 +63,7 @@ function createConsumer(
     disconnect: async () => undefined,
     stop: async () => undefined,
     subscribe: async () => undefined,
-    run: async ({ eachMessage }: { eachMessage: (payload: unknown) => Promise<void> }) => run(eachMessage),
+    run: async ({ eachMessage }: { eachMessage: (payload: unknown) => Promise<void> }) =>
+      run(eachMessage),
   } as unknown as Consumer;
 }

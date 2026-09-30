@@ -1,13 +1,13 @@
 # Main Project TODO
 
-This is the execution checklist for the TypeScript Playwright API test automation framework. The repository currently contains requirements and planning documents only; implementation has not started.
+This is the execution checklist for the TypeScript Playwright API test automation framework. The reusable framework and representative test suites are implemented. The remaining work is real-service validation, reporting, CI, and hardening.
 
 ## Current status
 
 - [x] Confirm target stack and high-level scope.
 - [x] Define target project structure.
 - [x] Define test types, data strategy, reporting requirements, PostgreSQL requirements, and CI requirements.
-- [ ] Implement the framework.
+- [x] Implement the framework.
 - [ ] Prove one reliable API → Kafka → PostgreSQL flow locally and in CI.
 
 ## Phase 0 — Architecture and decisions
@@ -15,7 +15,7 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 - [x] Create `docs/architecture.md` with component boundaries and the API → Kafka → PostgreSQL flow.
 - [x] Create `docs/conventions.md` covering naming, file organization, TypeScript, linting, formatting, and test naming.
 - [x] Create `docs/testing-strategy.md` consolidating the approved test layers and execution priorities.
-- [ ] Confirm the sample business domain, API endpoints, Kafka topics/events, and expected PostgreSQL tables.
+- [x] Define the sample order domain, `/orders` endpoint, `orders.created.integration` event topic, and `orders` table used by the framework-owned examples.
 - [x] Decide Kafka image/topology, broker configuration, topic creation, consumer-group strategy, and readiness checks.
 - [x] Decide PostgreSQL schema/bootstrap approach and transactional cleanup strategy.
 - [x] Decide environment configuration for `local`, `dev`, and `stage`.
@@ -45,7 +45,7 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 - [x] Add deterministic Kafka polling, filtering, explicit timeouts, and consumer cleanup.
 - [x] Add shared logging and correlation-ID utilities under `app/src/logging` and `app/src/utils`.
 - [x] Add JSON Schema validation with AJV for API, Kafka, and contract schemas.
-- [ ] Add schema files under `app/src/schemas/api`, `app/src/schemas/kafka`, and `app/src/schemas/contracts`.
+- [x] Add API and Kafka schemas under `app/src/schemas`; contract schema fixtures live under `tests/src/fixtures/contracts`.
 - [x] Add reusable API, Kafka, database, and schema assertions under `tests/src/assertions`.
 - [x] Add Allure/reporting helper foundations under `tests/src/reporting`.
 
@@ -64,9 +64,9 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 - [x] Implement one REST API negative/error-path test.
 - [x] Implement one API response JSON Schema validation test.
 - [x] Implement one Kafka produce/consume test with payload and schema assertions.
-- [x] Implement the critical API → Kafka → PostgreSQL end-to-end test.
+- [x] Implement a framework-owned API → Kafka → PostgreSQL integration example using a self-hosted order API boundary.
 - [x] Add database polling for eventual consistency and verify no duplicate records/events where relevant.
-- [ ] Make the complete flow runnable locally with `npm test`.
+- [ ] Prove the real-service flow locally; `npm test` runs the baseline suite, while Kafka and PostgreSQL integration tests are opt-in through `RUN_INTEGRATION_TESTS=true`.
 
 ## Phase 5 — Test type coverage
 
@@ -83,11 +83,14 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 
 ## Phase 6 — WireMock, reporting, and diagnostics
 
-- [ ] Add WireMock mappings and response files under `docker/wiremock/mappings` and `docker/wiremock/__files`.
+- [x] Add a baseline WireMock health mapping under `docker/wiremock/mappings`.
+- [ ] Add business-facing WireMock mappings, response files, and test coverage.
 - [ ] Add WireMock reset/stub/assertion helpers under `tests/src/mocks/wiremock`.
 - [ ] Add Allure steps and attachments for API requests/responses, Kafka payloads, SQL results, schemas, and failures.
-- [ ] Configure Playwright HTML and Allure output under `artifacts`.
-- [ ] Add correlation IDs and environment metadata to logs and reports.
+- [x] Configure Playwright HTML output under `artifacts/html-report`.
+- [ ] Configure Allure result output under `artifacts/allure-results` and add it as a Playwright reporter.
+- [x] Add correlation-ID utilities and use correlation IDs in the API/Kafka examples.
+- [ ] Add environment metadata and correlation IDs consistently to logs and reports.
 - [ ] Ensure logs and reports include actionable timeout and polling diagnostics.
 - [ ] Keep generated artifacts out of source-controlled implementation files.
 
@@ -106,7 +109,7 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 
 ## Phase 8 — Hardening and documentation
 
-- [ ] Run lint, format checks, type-checking, and all test groups; fix failures.
+- [ ] Run lint, format checks, type-checking, and all test groups; fix the current repository-wide Prettier check failures and validate opt-in integrations.
 - [ ] Remove flaky fixed sleeps and replace them with polling and explicit deadlines.
 - [ ] Verify Kafka, database, WireMock, and test cleanup after failures.
 - [ ] Review parallel execution, resource usage, and test isolation.
@@ -120,9 +123,10 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 - [ ] `npm install` completes from a clean checkout.
 - [ ] Configuration is validated and no secrets, URLs, credentials, or topic names are hardcoded.
 - [ ] `npm run lint`, type-checking, and formatting checks pass.
-- [ ] `npm test` runs the intended suite and produces Playwright/Allure results.
+- [x] `npm test` runs the baseline suite and produces a Playwright HTML report.
+- [ ] Configure and produce Allure results for test executions.
 - [ ] The API → Kafka → PostgreSQL example passes locally and in CI.
-- [ ] Each required test type has at least one runnable example and independent command.
+- [x] Each required test type has a representative test and an independent command; Kafka and E2E integration examples require local services and `RUN_INTEGRATION_TESTS=true`.
 - [ ] Failures provide request, response, Kafka, SQL, schema, log, and timeout diagnostics where applicable.
 - [ ] README and architecture documentation match the implemented structure.
 

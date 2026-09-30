@@ -4,7 +4,9 @@ TypeScript API test automation framework for REST APIs with Kafka event validati
 
 ## Project Status
 
-Phase 2 core foundations are implemented: the TypeScript/Playwright scaffold, local Docker Compose services, validated runtime configuration, reusable API and PostgreSQL clients, Kafka producer/consumer helpers, AJV schema validation, database transactions/query helpers, assertions, logging, correlation IDs, and reporting attachments are available. Business-domain schemas, WireMock test helpers, the API → Kafka → PostgreSQL scenario, and CI pipelines remain planned work.
+The reusable framework and representative test suites are implemented: TypeScript/Playwright configuration, local Docker Compose definitions, validated runtime configuration, API and PostgreSQL clients, Kafka producer/consumer helpers, AJV schemas, database polling and cleanup, builders, fixtures, assertions, logging, correlation IDs, and Playwright HTML reporting.
+
+The default suite runs without Docker. Opt-in examples exercise Kafka and PostgreSQL, but their API boundary is a self-hosted test server; they are not yet proof against a deployed business service. WireMock currently contains a health mapping only. Allure configuration and attachments, WireMock helpers, CI pipelines, and a real-service API-to-Kafka-to-PostgreSQL proof remain outstanding.
 
 ## Goals
 
@@ -14,27 +16,27 @@ Phase 2 core foundations are implemented: the TypeScript/Playwright scaffold, lo
 - Support end-to-end API to Kafka to PostgreSQL validation.
 - Keep test data reusable through JSON fixtures, builders, and Faker.
 - Provide deterministic async assertions with polling, explicit timeouts, and clear diagnostics.
-- Generate Playwright HTML and Allure reports.
-- Run test groups independently in local development and CI/CD.
+- Generate Playwright HTML reports now, with Allure reporting planned.
+- Run test groups independently locally; CI/CD support is planned.
 
 ## Tech Stack
 
-| Area              | Tools                          |
-| ----------------- | ------------------------------ |
-| Language          | TypeScript                     |
-| Runtime           | Node.js, npm                   |
-| Test runner       | Playwright Test                |
-| API testing       | Playwright API Request Context |
-| Kafka             | KafkaJS, Docker Compose        |
-| Database          | PostgreSQL, node-postgres `pg` |
-| Schema validation | AJV, JSON Schema               |
-| Mocking           | WireMock                       |
-| Test data         | Faker                          |
-| Reporting         | Allure, Playwright HTML Report |
-| Logging           | Pino                           |
-| Configuration     | dotenv, zod                    |
-| Code quality      | ESLint, Prettier               |
-| CI/CD             | GitHub Actions, GitLab CI      |
+| Area              | Tools                                                                           |
+| ----------------- | ------------------------------------------------------------------------------- |
+| Language          | TypeScript                                                                      |
+| Runtime           | Node.js, npm                                                                    |
+| Test runner       | Playwright Test                                                                 |
+| API testing       | Playwright API Request Context                                                  |
+| Kafka             | KafkaJS, Docker Compose                                                         |
+| Database          | PostgreSQL, node-postgres `pg`                                                  |
+| Schema validation | AJV, JSON Schema                                                                |
+| Mocking           | WireMock                                                                        |
+| Test data         | Faker                                                                           |
+| Reporting         | Playwright HTML Report (Allure package installed; reporter integration pending) |
+| Logging           | Pino                                                                            |
+| Configuration     | dotenv, zod                                                                     |
+| Code quality      | ESLint, Prettier                                                                |
+| CI/CD             | GitHub Actions and GitLab CI planned                                            |
 
 ## Target Project Structure
 
@@ -230,7 +232,7 @@ npm run test:smoke-performance
 npm run test:consumer-lag-timeout
 ```
 
-The Kafka and end-to-end tests are opt-in so the framework-only suite remains runnable without Docker. After starting and waiting for the local services, run them from PowerShell with:
+The Kafka and end-to-end tests are opt-in so the framework-only suite remains runnable without Docker. They validate the reusable Kafka/PostgreSQL helpers through a self-hosted order API test boundary; replace that boundary with the real service before treating them as system E2E coverage. After starting and waiting for the local services, run them from PowerShell with:
 
 ```powershell
 $env:RUN_INTEGRATION_TESTS = 'true'
@@ -323,7 +325,7 @@ WireMock runtime assets should live under `docker/wiremock`.
 
 ## Reporting
 
-Generated reports and diagnostics should be written under `artifacts`.
+Playwright HTML reports are written under `artifacts/html-report`. The remaining paths below are the intended layout for Allure results and richer diagnostics once those integrations are completed.
 
 Reusable reporting helpers, attachment helpers, and report metadata utilities should live under `tests/src/reporting`.
 
@@ -340,7 +342,7 @@ artifacts/
   kafka/
 ```
 
-Reports should include:
+The target reporting design includes:
 
 - Playwright execution summary
 - Allure results and report
@@ -365,7 +367,7 @@ npm run report:allure
 
 ## CI/CD
 
-CI pipelines should support GitHub Actions and GitLab CI.
+GitHub Actions and GitLab CI pipelines have not been added yet. When implemented, they should support the following stages and behavior:
 
 Required stages:
 

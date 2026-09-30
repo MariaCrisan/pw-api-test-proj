@@ -43,7 +43,7 @@ flowchart LR
 6. Test cleanup removes data created by the run, even after a failure.
 7. The test report records relevant HTTP, Kafka, and database diagnostics.
 
-The first Phase 1 REST test is deliberately self-hosted so that the baseline suite runs without Docker. Real API, Kafka, and database integration starts with the later E2E phase.
+The REST tests use a deliberately self-hosted order API so the baseline suite runs without Docker. The opt-in Kafka and PostgreSQL examples use that same test boundary to exercise framework helpers. A real deployed API boundary is still required before this can be considered system E2E coverage.
 
 ## Runtime environments
 
