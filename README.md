@@ -367,7 +367,9 @@ npm run report:allure
 
 ## CI/CD
 
-GitHub Actions and GitLab CI pipelines have not been added yet. When implemented, they should support the following stages and behavior:
+GitHub Actions and GitLab CI pipelines run formatting, linting, type-checking, and each test group independently. Each test job starts Docker Compose, waits for Kafka, PostgreSQL, and WireMock, then publishes the Playwright HTML report, Playwright test results, and Docker diagnostics. Allure is intentionally not part of the CI pipelines yet.
+
+GitHub Actions supports a `workflow_dispatch` `test_group` input. GitLab runs the same groups through a parallel matrix. GitLab CI requires a runner that permits Docker-in-Docker.
 
 Required stages:
 

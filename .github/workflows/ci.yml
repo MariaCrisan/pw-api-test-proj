@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      test_group:
+        description: Test group to run
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - api
+          - kafka
+          - e2e
+          - contracts
+          - negative
+          - retry-idempotency
+          - smoke-performance
+          - consumer-lag-timeout
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+
+  select-test-groups:
+    name: Select test groups
+    runs-on: ubuntu-latest
+    outputs:
+      groups: ${{ steps.groups.outputs.groups }}
+    steps:
+      - id: groups
+        shell: bash
+        run: |
+          selected='${{ inputs.test_group || 'all' }}'
+          if [ "$selected" = 'all' ]; then
+            echo 'groups=["api","kafka","e2e","contracts","negative","retry-idempotency","smoke-performance","consumer-lag-timeout"]' >> "$GITHUB_OUTPUT"
+          else
+            printf 'groups=["%s"]\n' "$selected" >> "$GITHUB_OUTPUT"
+          fi
+
+  test:
+    name: ${{ matrix.group }} tests
+    needs: [quality, select-test-groups]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        group: ${{ fromJSON(needs.select-test-groups.outputs.groups) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run services:up
+      - run: npm run services:wait
+      - name: Run test group
+        env:
+          RUN_INTEGRATION_TESTS: ${{ (matrix.group == 'kafka' || matrix.group == 'e2e') && 'true' || 'false' }}
+        run: npm run test:${{ matrix.group }}
+      - name: Capture Docker diagnostics
+        if: always()
+        run: docker compose logs --no-color > docker-compose.log
+      - name: Publish Playwright and service diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts-${{ matrix.group }}
+          path: |
+            artifacts/html-report
+            test-results
+            docker-compose.log
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Stop services
+        if: always()
+        run: docker compose down -v --remove-orphans
