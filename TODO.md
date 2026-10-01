@@ -110,13 +110,13 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 ## Phase 8 — Hardening and documentation
 
 - [ ] Run lint, format checks, type-checking, and all test groups; validate opt-in integrations in a Docker-capable environment.
-- [ ] Remove flaky fixed sleeps and replace them with polling and explicit deadlines.
-- [ ] Verify Kafka, database, WireMock, and test cleanup after failures.
-- [ ] Review parallel execution, resource usage, and test isolation.
-- [ ] Align README commands and structure with the implemented project.
-- [ ] Document exact local setup, service startup, test commands, report commands, and troubleshooting.
+- [x] Remove flaky fixed sleeps and replace them with polling and explicit deadlines.
+- [ ] Verify Kafka, database, WireMock, and test cleanup after failures (Docker-backed verification pending).
+- [x] Review parallel execution, resource usage, and test isolation.
+- [x] Align README commands and structure with the implemented project.
+- [x] Document exact local setup, service startup, test commands, report commands, and troubleshooting.
 - [ ] Add templates or generators only after real test usage exposes repetition.
-- [ ] Review scope before considering deferred items such as custom DSLs, multi-database support, Kubernetes, k6/Gatling, or AI-generated tests.
+- [x] Review scope before considering deferred items such as custom DSLs, multi-database support, Kubernetes, k6/Gatling, or AI-generated tests.
 
 ## Definition of done
 
