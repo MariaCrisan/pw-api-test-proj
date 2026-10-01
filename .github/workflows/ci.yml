@@ -37,6 +37,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
       - run: npm ci
       - run: npm run format:check
       - run: npm run lint
@@ -73,6 +77,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
       - run: npm ci
       - run: npm run services:up
       - run: npm run services:wait
@@ -81,10 +89,13 @@ jobs:
           RUN_INTEGRATION_TESTS: ${{ (matrix.group == 'kafka' || matrix.group == 'e2e') && 'true' || 'false' }}
           RUN_WIREMOCK_TESTS: ${{ matrix.group == 'wiremock' && 'true' || 'false' }}
         run: npm run test:${{ matrix.group }}
+      - name: Generate Allure report
+        if: always()
+        run: npm run report:allure
       - name: Capture Docker diagnostics
         if: always()
         run: docker compose logs --no-color > docker-compose.log
-      - name: Publish Playwright and service diagnostics
+      - name: Publish test reports and service diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -92,6 +103,7 @@ jobs:
           path: |
             artifacts/html-report
             artifacts/allure-results
+            artifacts/allure-report
             test-results
             docker-compose.log
           if-no-files-found: warn
@@ -99,3 +111,37 @@ jobs:
       - name: Stop services
         if: always()
         run: docker compose down -v --remove-orphans
+
+  aggregate-allure:
+    name: Aggregated Allure report
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: npm ci
+      - name: Download Allure results from test groups
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-artifacts-*
+          merge-multiple: true
+      - name: Generate aggregated Allure report
+        run: npm run report:allure
+      - name: Publish aggregated Allure report
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-aggregated
+          path: |
+            artifacts/allure-results
+            artifacts/allure-report
+          if-no-files-found: error
+          retention-days: 14

@@ -1,6 +1,7 @@
 stages:
   - quality
   - test
+  - report
 
 default:
   image: docker:27.5.1-cli
@@ -17,7 +18,7 @@ default:
     paths:
       - .npm/
   before_script:
-    - apk add --no-cache nodejs npm
+    - apk add --no-cache nodejs npm openjdk17-jre
     - node --version
     - npm --version
     - npm ci
@@ -56,6 +57,7 @@ test-groups:
       fi
       npm run "test:$TEST_GROUP"
   after_script:
+    - npm run report:allure || true
     - docker compose logs --no-color > docker-compose.log || true
     - docker compose down -v --remove-orphans || true
   artifacts:
@@ -64,5 +66,21 @@ test-groups:
     paths:
       - artifacts/html-report/
       - artifacts/allure-results/
+      - artifacts/allure-report/
       - test-results/
       - docker-compose.log
+
+aggregate-allure:
+  stage: report
+  needs:
+    - job: test-groups
+      artifacts: true
+  when: always
+  script:
+    - npm run report:allure
+  artifacts:
+    when: always
+    expire_in: 14 days
+    paths:
+      - artifacts/allure-results/
+      - artifacts/allure-report/

@@ -370,15 +370,18 @@ View Playwright HTML report:
 npm run report
 ```
 
-Generate and view Allure report:
+After running tests, generate the Allure report and open it locally:
 
-```bash
-npm run report:allure
+```powershell
+npm.cmd run report:allure
+npx.cmd allure open artifacts/allure-report
 ```
+
+Raw result files are written to `artifacts/allure-results`; the generated report is written to `artifacts/allure-report`. Regenerate the report after each test run.
 
 ## CI/CD
 
-GitHub Actions and GitLab CI pipelines run formatting, linting, type-checking, and each test group independently. Each test job starts Docker Compose, waits for Kafka, PostgreSQL, and WireMock, then publishes Playwright HTML, Allure results, Playwright test results, and Docker diagnostics. The `wiremock` group runs the opt-in business-stub tests.
+GitHub Actions and GitLab CI pipelines run formatting, linting, type-checking, and each test group independently. Each test job starts Docker Compose, waits for Kafka, PostgreSQL, and WireMock, generates an Allure HTML report, then publishes Playwright HTML, Allure results, the rendered Allure report, Playwright test results, and Docker diagnostics. A final report job aggregates the Allure result files from every test group and publishes one combined Allure report. The `wiremock` group runs the opt-in business-stub tests.
 
 GitHub Actions supports a `workflow_dispatch` `test_group` input. GitLab runs the same groups through a parallel matrix. GitLab CI requires a runner that permits Docker-in-Docker.
 
