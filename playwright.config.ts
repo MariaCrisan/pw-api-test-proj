@@ -6,7 +6,18 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
-  reporter: [['list'], ['html', { outputFolder: 'artifacts/html-report', open: 'never' }]],
+  reporter: [
+    ['list'],
+    ['html', { outputFolder: 'artifacts/html-report', open: 'never' }],
+    [
+      'allure-playwright',
+      {
+        resultsDir: 'artifacts/allure-results',
+        detail: true,
+        suiteTitle: false,
+      },
+    ],
+  ],
   use: {
     trace: 'retain-on-failure',
   },

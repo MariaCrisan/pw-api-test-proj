@@ -21,6 +21,7 @@ on:
           - retry-idempotency
           - smoke-performance
           - consumer-lag-timeout
+          - wiremock
 
 permissions:
   contents: read
@@ -52,7 +53,7 @@ jobs:
         run: |
           selected='${{ inputs.test_group || 'all' }}'
           if [ "$selected" = 'all' ]; then
-            echo 'groups=["api","kafka","e2e","contracts","negative","retry-idempotency","smoke-performance","consumer-lag-timeout"]' >> "$GITHUB_OUTPUT"
+            echo 'groups=["api","kafka","e2e","contracts","negative","retry-idempotency","smoke-performance","consumer-lag-timeout","wiremock"]' >> "$GITHUB_OUTPUT"
           else
             printf 'groups=["%s"]\n' "$selected" >> "$GITHUB_OUTPUT"
           fi
@@ -78,6 +79,7 @@ jobs:
       - name: Run test group
         env:
           RUN_INTEGRATION_TESTS: ${{ (matrix.group == 'kafka' || matrix.group == 'e2e') && 'true' || 'false' }}
+          RUN_WIREMOCK_TESTS: ${{ matrix.group == 'wiremock' && 'true' || 'false' }}
         run: npm run test:${{ matrix.group }}
       - name: Capture Docker diagnostics
         if: always()
@@ -89,6 +91,7 @@ jobs:
           name: test-artifacts-${{ matrix.group }}
           path: |
             artifacts/html-report
+            artifacts/allure-results
             test-results
             docker-compose.log
           if-no-files-found: warn

@@ -8,6 +8,11 @@ import { expectSchema } from '../assertions/schema/schema-assertions';
 import { OrderCreatedEventBuilder } from '../builders/kafka/order-created-event-builder';
 import type { OrderCreatedEvent } from '../builders/types';
 import {
+  attachEnvironmentMetadata,
+  attachKafkaMessage,
+  attachSchemaResult,
+} from '../reporting/attachments';
+import {
   createIntegrationKafka,
   ensureKafkaTopic,
   runIntegrationTests,
@@ -18,7 +23,7 @@ const topic = 'orders.created.integration';
 test.describe('order-created Kafka integration', () => {
   test.skip(!runIntegrationTests, 'Set RUN_INTEGRATION_TESTS=true after starting Docker services.');
 
-  test('produces and consumes a schema-valid correlated order event', async () => {
+  test('produces and consumes a schema-valid correlated order event', async ({}, testInfo) => {
     const environment = loadEnvironmentConfig();
     const kafka = createIntegrationKafka(environment.kafka.brokers);
     await ensureKafkaTopic(kafka, topic);
@@ -26,6 +31,7 @@ test.describe('order-created Kafka integration', () => {
     const event = OrderCreatedEventBuilder.create({ seed: 99, marker: 'kafka-integration' })
       .withCorrelationId('kafka-integration-correlation')
       .build();
+    await attachEnvironmentMetadata(testInfo, environment, event.correlationId);
     const producer = new KafkaJsonProducer(kafka);
     const consumer = new KafkaJsonConsumer(kafka);
     await producer.connect();
@@ -38,13 +44,16 @@ test.describe('order-created Kafka integration', () => {
         correlationId: event.correlationId,
         timeoutMs: environment.assertions.timeoutMs,
       });
-      await producer.send(topic, {
-        key: event.payload.orderId,
-        value: event,
-        headers: { 'correlation-id': event.correlationId },
-      });
+      await test.step('Produce correlated order-created event', () =>
+        producer.send(topic, {
+          key: event.payload.orderId,
+          value: event,
+          headers: { 'correlation-id': event.correlationId },
+        }));
 
-      const message = await consumedEvent;
+      const message = await test.step('Await correlated Kafka event', () => consumedEvent);
+      await attachKafkaMessage(testInfo, message);
+      await attachSchemaResult(testInfo, 'order.created payload', message.value.payload);
       expectKafkaKey(message, event.payload.orderId);
       expectKafkaHeader(message, 'correlation-id', event.correlationId);
       expect(message.value).toEqual(event);

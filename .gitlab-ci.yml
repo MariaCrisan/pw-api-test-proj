@@ -43,12 +43,16 @@ test-groups:
           - retry-idempotency
           - smoke-performance
           - consumer-lag-timeout
+          - wiremock
   script:
     - npm run services:up
     - npm run services:wait
     - |
       if [ "$TEST_GROUP" = 'kafka' ] || [ "$TEST_GROUP" = 'e2e' ]; then
         export RUN_INTEGRATION_TESTS=true
+      fi
+      if [ "$TEST_GROUP" = 'wiremock' ]; then
+        export RUN_WIREMOCK_TESTS=true
       fi
       npm run "test:$TEST_GROUP"
   after_script:
@@ -59,5 +63,6 @@ test-groups:
     expire_in: 14 days
     paths:
       - artifacts/html-report/
+      - artifacts/allure-results/
       - test-results/
       - docker-compose.log

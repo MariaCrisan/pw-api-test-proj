@@ -6,7 +6,7 @@ TypeScript API test automation framework for REST APIs with Kafka event validati
 
 The reusable framework and representative test suites are implemented: TypeScript/Playwright configuration, local Docker Compose definitions, validated runtime configuration, API and PostgreSQL clients, Kafka producer/consumer helpers, AJV schemas, database polling and cleanup, builders, fixtures, assertions, logging, correlation IDs, and Playwright HTML reporting.
 
-The default suite runs without Docker. The first framework-owned API-to-Kafka-to-PostgreSQL flow has been verified locally and in GitHub Actions. Its API boundary is a self-hosted test server, so it does not yet prove integration with a deployed business service. WireMock currently contains a health mapping only; Allure configuration and attachments, plus WireMock helpers, remain outstanding.
+The default suite runs without Docker. The first framework-owned API-to-Kafka-to-PostgreSQL flow has been verified locally and in GitHub Actions. Its API boundary is a self-hosted test server, so it does not yet prove integration with a deployed business service. WireMock provides a reusable inventory mapping and test helpers; Allure results, API/Kafka/database/schema attachments, and execution metadata are generated alongside the Playwright HTML report.
 
 ## Goals
 
@@ -16,27 +16,27 @@ The default suite runs without Docker. The first framework-owned API-to-Kafka-to
 - Support end-to-end API to Kafka to PostgreSQL validation.
 - Keep test data reusable through JSON fixtures, builders, and Faker.
 - Provide deterministic async assertions with polling, explicit timeouts, and clear diagnostics.
-- Generate Playwright HTML reports now, with Allure reporting planned.
+- Generate Playwright HTML and Allure reports with diagnostic attachments.
 - Run test groups independently locally and in CI/CD.
 
 ## Tech Stack
 
-| Area              | Tools                                                                           |
-| ----------------- | ------------------------------------------------------------------------------- |
-| Language          | TypeScript                                                                      |
-| Runtime           | Node.js, npm                                                                    |
-| Test runner       | Playwright Test                                                                 |
-| API testing       | Playwright API Request Context                                                  |
-| Kafka             | KafkaJS, Docker Compose                                                         |
-| Database          | PostgreSQL, node-postgres `pg`                                                  |
-| Schema validation | AJV, JSON Schema                                                                |
-| Mocking           | WireMock                                                                        |
-| Test data         | Faker                                                                           |
-| Reporting         | Playwright HTML Report (Allure package installed; reporter integration pending) |
-| Logging           | Pino                                                                            |
-| Configuration     | dotenv, zod                                                                     |
-| Code quality      | ESLint, Prettier                                                                |
-| CI/CD             | GitHub Actions and GitLab CI                                                    |
+| Area              | Tools                          |
+| ----------------- | ------------------------------ |
+| Language          | TypeScript                     |
+| Runtime           | Node.js, npm                   |
+| Test runner       | Playwright Test                |
+| API testing       | Playwright API Request Context |
+| Kafka             | KafkaJS, Docker Compose        |
+| Database          | PostgreSQL, node-postgres `pg` |
+| Schema validation | AJV, JSON Schema               |
+| Mocking           | WireMock                       |
+| Test data         | Faker                          |
+| Reporting         | Playwright HTML Report, Allure |
+| Logging           | Pino                           |
+| Configuration     | dotenv, zod                    |
+| Code quality      | ESLint, Prettier               |
+| CI/CD             | GitHub Actions and GitLab CI   |
 
 ## Target Project Structure
 
@@ -230,6 +230,7 @@ npm run test:negative
 npm run test:retry-idempotency
 npm run test:smoke-performance
 npm run test:consumer-lag-timeout
+npm run test:wiremock
 ```
 
 The Kafka and end-to-end tests are opt-in so the framework-only suite remains runnable without Docker. They validate the reusable Kafka/PostgreSQL helpers through a self-hosted order API test boundary; replace that boundary with the real service before treating them as system E2E coverage. After starting and waiting for the local services, run them from PowerShell with:
@@ -242,6 +243,14 @@ Remove-Item Env:RUN_INTEGRATION_TESTS
 ```
 
 The sample order flow posts an order to a test API boundary, consumes the resulting `order.created.integration` Kafka event, and polls PostgreSQL for the persisted row. Each run creates a unique marker and removes matching rows during cleanup.
+
+WireMock tests are opt-in and require the local services:
+
+```powershell
+$env:RUN_WIREMOCK_TESTS = 'true'
+npm run test:wiremock
+Remove-Item Env:RUN_WIREMOCK_TESTS
+```
 
 Code quality scripts:
 
@@ -323,9 +332,11 @@ WireMock runtime assets should live under `docker/wiremock`.
 - Response body files belong in `docker/wiremock/__files`.
 - Test helper code for creating, resetting, or asserting stubs belongs in `tests/src/mocks/wiremock`.
 
+`WireMockClient` resets mappings to their Docker-provided defaults before and after each test, creates test-specific stubs through the admin API, and verifies recorded requests.
+
 ## Reporting
 
-Playwright HTML reports are written under `artifacts/html-report`. The remaining paths below are the intended layout for Allure results and richer diagnostics once those integrations are completed.
+Playwright HTML reports are written under `artifacts/html-report`; Allure result files are written under `artifacts/allure-results`. API request/response, Kafka message, PostgreSQL query, schema-input, and environment/correlation metadata attachments are included for the representative API, Kafka, and E2E flows.
 
 Reusable reporting helpers, attachment helpers, and report metadata utilities should live under `tests/src/reporting`.
 
@@ -367,7 +378,7 @@ npm run report:allure
 
 ## CI/CD
 
-GitHub Actions and GitLab CI pipelines run formatting, linting, type-checking, and each test group independently. Each test job starts Docker Compose, waits for Kafka, PostgreSQL, and WireMock, then publishes the Playwright HTML report, Playwright test results, and Docker diagnostics. Allure is intentionally not part of the CI pipelines yet.
+GitHub Actions and GitLab CI pipelines run formatting, linting, type-checking, and each test group independently. Each test job starts Docker Compose, waits for Kafka, PostgreSQL, and WireMock, then publishes Playwright HTML, Allure results, Playwright test results, and Docker diagnostics. The `wiremock` group runs the opt-in business-stub tests.
 
 GitHub Actions supports a `workflow_dispatch` `test_group` input. GitLab runs the same groups through a parallel matrix. GitLab CI requires a runner that permits Docker-in-Docker.
 
