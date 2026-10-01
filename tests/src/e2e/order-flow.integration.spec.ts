@@ -7,11 +7,19 @@ import { loadEnvironmentConfig } from '../../../app/src/config/environment';
 import { queryOne } from '../../../app/src/db/queries';
 import { cleanupByMarker } from '../../../app/src/db/transactions';
 import { KafkaJsonConsumer, KafkaJsonProducer } from '../../../app/src/kafka';
+import { createLogger } from '../../../app/src/logging/logger';
 import { poll } from '../../../app/src/utils/polling';
 import { expectKafkaHeader, expectKafkaKey } from '../assertions/kafka/kafka-assertions';
 import { OrderBuilder } from '../builders/api/order-builder';
 import { OrderCreatedEventBuilder } from '../builders/kafka/order-created-event-builder';
 import type { OrderCreatedEvent, OrderRecord } from '../builders/types';
+import {
+  attachApiExchange,
+  attachDatabaseResult,
+  attachEnvironmentMetadata,
+  attachKafkaMessage,
+  attachSchemaResult,
+} from '../reporting/attachments';
 import {
   createIntegrationKafka,
   ensureKafkaTopic,
@@ -24,7 +32,9 @@ const topic = 'orders.created.integration';
 test.describe('order API to Kafka to PostgreSQL flow', () => {
   test.skip(!runIntegrationTests, 'Set RUN_INTEGRATION_TESTS=true after starting Docker services.');
 
-  test('persists and publishes the accepted order exactly once', async ({ playwright }) => {
+  test('persists and publishes the accepted order exactly once', async ({
+    playwright,
+  }, testInfo) => {
     const environment = loadEnvironmentConfig();
     const kafka = createIntegrationKafka(environment.kafka.brokers);
     const database = new PostgresClient(environment.postgres);
@@ -32,6 +42,10 @@ test.describe('order API to Kafka to PostgreSQL flow', () => {
     const consumer = new KafkaJsonConsumer(kafka);
     const order = OrderBuilder.create({ marker: 'e2e-order' }).build();
     const correlationId = `${order.testMarker}-correlation`;
+    const logger = createLogger('order-flow', {
+      environment: environment.environment,
+      correlationId,
+    });
     let orderApi: OrderApiServer | undefined;
 
     await ensureKafkaTopic(kafka, topic);
@@ -47,6 +61,7 @@ test.describe('order API to Kafka to PostgreSQL flow', () => {
     `);
     await producer.connect();
     await consumer.connect();
+    await attachEnvironmentMetadata(testInfo, environment, correlationId);
 
     try {
       orderApi = await startOrderApiServer({
@@ -82,12 +97,25 @@ test.describe('order API to Kafka to PostgreSQL flow', () => {
         timeoutMs: environment.assertions.timeoutMs,
       });
 
-      const response = await apiClient.post('/orders', order, {
-        headers: { 'x-correlation-id': correlationId },
-      });
+      const response = await test.step('Submit order API request', () =>
+        apiClient.post('/orders', order, {
+          headers: { 'x-correlation-id': correlationId },
+        }));
+      await attachApiExchange(
+        testInfo,
+        {
+          method: 'POST',
+          url: `${orderApi.baseUrl}/orders`,
+          headers: { 'x-correlation-id': correlationId },
+          body: order,
+        },
+        response,
+      );
       expect(response.status()).toBe(201);
 
-      const message = await consumedEvent;
+      const message = await test.step('Await correlated Kafka event', () => consumedEvent);
+      await attachKafkaMessage(testInfo, message);
+      await attachSchemaResult(testInfo, 'order.created payload', message.value.payload);
       expectKafkaKey(message, order.orderId);
       expectKafkaHeader(message, 'correlation-id', correlationId);
       expect(message.value.payload).toMatchObject({
@@ -95,19 +123,20 @@ test.describe('order API to Kafka to PostgreSQL flow', () => {
         testMarker: order.testMarker,
       });
 
-      const record = await poll(
-        async () =>
-          queryOne<OrderRecord>(
-            database,
-            'SELECT order_id, customer_id, total::float8 AS total, currency, test_marker FROM orders WHERE order_id = $1',
-            [order.orderId],
-          ),
-        {
-          timeoutMs: environment.assertions.timeoutMs,
-          intervalMs: environment.assertions.pollIntervalMs,
-          description: `order ${order.orderId} in PostgreSQL`,
-        },
-      );
+      const record = await test.step('Poll PostgreSQL for persisted order', () =>
+        poll(
+          async () =>
+            queryOne<OrderRecord>(
+              database,
+              'SELECT order_id, customer_id, total::float8 AS total, currency, test_marker FROM orders WHERE order_id = $1',
+              [order.orderId],
+            ),
+          {
+            timeoutMs: environment.assertions.timeoutMs,
+            intervalMs: environment.assertions.pollIntervalMs,
+            description: `order ${order.orderId} in PostgreSQL`,
+          },
+        ));
       expect(record).toEqual({
         order_id: order.orderId,
         customer_id: order.customer.customerId,
@@ -115,6 +144,7 @@ test.describe('order API to Kafka to PostgreSQL flow', () => {
         currency: order.currency,
         test_marker: order.testMarker,
       });
+      await attachDatabaseResult(testInfo, 'orders by order_id', record);
 
       const count = await queryOne<QueryResultRow & { count: number }>(
         database,
@@ -122,6 +152,10 @@ test.describe('order API to Kafka to PostgreSQL flow', () => {
         [order.testMarker],
       );
       expect(count?.count).toBe(1);
+      logger.info(
+        { orderId: order.orderId, topic },
+        'Validated API, Kafka, and PostgreSQL order flow',
+      );
       await requestContext.dispose();
     } finally {
       if (orderApi) await orderApi.close();

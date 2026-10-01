@@ -84,11 +84,11 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 ## Phase 6 — WireMock, reporting, and diagnostics
 
 - [x] Add a baseline WireMock health mapping under `docker/wiremock/mappings`.
-- [ ] Add business-facing WireMock mappings, response files, and test coverage.
-- [ ] Add WireMock reset/stub/assertion helpers under `tests/src/mocks/wiremock`.
+- [x] Add business-facing WireMock mappings, response files, and test coverage.
+- [x] Add WireMock reset/stub/assertion helpers under `tests/src/mocks/wiremock`.
 - [ ] Add Allure steps and attachments for API requests/responses, Kafka payloads, SQL results, schemas, and failures.
 - [x] Configure Playwright HTML output under `artifacts/html-report`.
-- [ ] Configure Allure result output under `artifacts/allure-results` and add it as a Playwright reporter.
+- [x] Configure Allure result output under `artifacts/allure-results` and add it as a Playwright reporter.
 - [x] Add correlation-ID utilities and use correlation IDs in the API/Kafka examples.
 - [ ] Add environment metadata and correlation IDs consistently to logs and reports.
 - [ ] Ensure logs and reports include actionable timeout and polling diagnostics.
