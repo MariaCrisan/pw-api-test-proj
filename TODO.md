@@ -96,20 +96,20 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 
 ## Phase 7 — CI/CD
 
-- [ ] Create the GitHub Actions workflow.
-- [ ] Create the GitLab CI pipeline.
-- [ ] Add install, lint, build/type-check, and dependency readiness stages.
-- [ ] Start Docker Compose services in CI.
-- [ ] Run API, Kafka, contract, negative, retry/idempotency, smoke/performance, consumer-lag/timeout, and E2E groups independently.
-- [ ] Allow selection of test groups through CI variables or workflow inputs.
-- [ ] Publish Playwright HTML, Allure, logs, and diagnostic artifacts.
-- [ ] Fail pipelines on test, readiness, lint, or type-check failures.
-- [ ] Configure environment-specific variables and keep secrets in CI secret storage.
-- [ ] Verify the first complete flow in both local execution and CI.
+- [x] Create the GitHub Actions workflow.
+- [x] Create the GitLab CI pipeline.
+- [x] Add install, lint, format-check, type-check, and dependency-readiness stages.
+- [x] Start Docker Compose services in CI.
+- [x] Run API, Kafka, contract, negative, retry/idempotency, smoke/performance, consumer-lag/timeout, and E2E groups independently.
+- [x] Allow GitHub Actions manual selection of test groups through workflow inputs; GitLab runs groups as a matrix.
+- [x] Publish Playwright HTML, test results, and Docker diagnostics as CI artifacts; Allure is intentionally deferred.
+- [x] Fail pipelines on test, readiness, formatting, lint, or type-check failures.
+- [ ] Configure target-environment variables and secrets in the selected CI platforms.
+- [x] Verify the first complete flow in both local execution and CI.
 
 ## Phase 8 — Hardening and documentation
 
-- [ ] Run lint, format checks, type-checking, and all test groups; fix the current repository-wide Prettier check failures and validate opt-in integrations.
+- [ ] Run lint, format checks, type-checking, and all test groups; validate opt-in integrations in a Docker-capable environment.
 - [ ] Remove flaky fixed sleeps and replace them with polling and explicit deadlines.
 - [ ] Verify Kafka, database, WireMock, and test cleanup after failures.
 - [ ] Review parallel execution, resource usage, and test isolation.
@@ -122,7 +122,7 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 
 - [ ] `npm install` completes from a clean checkout.
 - [ ] Configuration is validated and no secrets, URLs, credentials, or topic names are hardcoded.
-- [ ] `npm run lint`, type-checking, and formatting checks pass.
+- [x] `npm run lint`, type-checking, and formatting checks pass.
 - [x] `npm test` runs the baseline suite and produces a Playwright HTML report.
 - [ ] Configure and produce Allure results for test executions.
 - [ ] The API → Kafka → PostgreSQL example passes locally and in CI.
