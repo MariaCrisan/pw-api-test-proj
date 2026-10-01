@@ -105,7 +105,7 @@ This is the execution checklist for the TypeScript Playwright API test automatio
 - [x] Publish Playwright HTML, test results, and Docker diagnostics as CI artifacts; Allure is intentionally deferred.
 - [x] Fail pipelines on test, readiness, formatting, lint, or type-check failures.
 - [ ] Configure target-environment variables and secrets in the selected CI platforms.
-- [ ] Verify the first complete flow in both local execution and CI.
+- [x] Verify the first complete flow in both local execution and CI.
 
 ## Phase 8 — Hardening and documentation
 

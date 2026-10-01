@@ -6,7 +6,7 @@ TypeScript API test automation framework for REST APIs with Kafka event validati
 
 The reusable framework and representative test suites are implemented: TypeScript/Playwright configuration, local Docker Compose definitions, validated runtime configuration, API and PostgreSQL clients, Kafka producer/consumer helpers, AJV schemas, database polling and cleanup, builders, fixtures, assertions, logging, correlation IDs, and Playwright HTML reporting.
 
-The default suite runs without Docker. Opt-in examples exercise Kafka and PostgreSQL, but their API boundary is a self-hosted test server; they are not yet proof against a deployed business service. WireMock currently contains a health mapping only. Allure configuration and attachments, WireMock helpers, CI pipelines, and a real-service API-to-Kafka-to-PostgreSQL proof remain outstanding.
+The default suite runs without Docker. The first framework-owned API-to-Kafka-to-PostgreSQL flow has been verified locally and in GitHub Actions. Its API boundary is a self-hosted test server, so it does not yet prove integration with a deployed business service. WireMock currently contains a health mapping only; Allure configuration and attachments, plus WireMock helpers, remain outstanding.
 
 ## Goals
 
@@ -17,7 +17,7 @@ The default suite runs without Docker. Opt-in examples exercise Kafka and Postgr
 - Keep test data reusable through JSON fixtures, builders, and Faker.
 - Provide deterministic async assertions with polling, explicit timeouts, and clear diagnostics.
 - Generate Playwright HTML reports now, with Allure reporting planned.
-- Run test groups independently locally; CI/CD support is planned.
+- Run test groups independently locally and in CI/CD.
 
 ## Tech Stack
 
@@ -36,7 +36,7 @@ The default suite runs without Docker. Opt-in examples exercise Kafka and Postgr
 | Logging           | Pino                                                                            |
 | Configuration     | dotenv, zod                                                                     |
 | Code quality      | ESLint, Prettier                                                                |
-| CI/CD             | GitHub Actions and GitLab CI planned                                            |
+| CI/CD             | GitHub Actions and GitLab CI                                                    |
 
 ## Target Project Structure
 
