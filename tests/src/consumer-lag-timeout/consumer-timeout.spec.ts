@@ -28,7 +28,7 @@ test('accepts an event delivered after a short consumer delay', async () => {
     .withCorrelationId(correlationId)
     .build();
   const consumer = createConsumer(async (eachMessage) => {
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await Promise.resolve();
     await eachMessage({
       topic,
       partition: 0,
@@ -53,6 +53,21 @@ test('accepts an event delivered after a short consumer delay', async () => {
 
   expect(received.value).toEqual(event);
   await kafkaConsumer.disconnect();
+});
+
+test('cancels an in-flight wait when the consumer is disconnected', async () => {
+  const consumer = createConsumer(async () => new Promise(() => undefined));
+  const kafka = { consumer: () => consumer } as unknown as Kafka;
+  const kafkaConsumer = new KafkaJsonConsumer(kafka, 'disconnect-diagnostic-test');
+  await kafkaConsumer.connect();
+
+  const received = kafkaConsumer.waitForMessage({ topic, correlationId, timeoutMs: 5_000 });
+  await Promise.resolve();
+  await kafkaConsumer.disconnect();
+
+  await expect(received).rejects.toThrow(
+    'Kafka consumer was disconnected while waiting for a message.',
+  );
 });
 
 function createConsumer(

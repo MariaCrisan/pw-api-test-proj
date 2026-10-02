@@ -149,12 +149,11 @@ root
 
 ## Prerequisites
 
-- Node.js LTS
-- npm
+- Node.js 20 or later
+- npm 10 or later
 - Docker Desktop or Docker Engine with Docker Compose
-- Access to the target REST API environment
-- PostgreSQL access for database validation tests
-- Allure CLI, if viewing Allure reports locally outside npm scripts
+- Access to a target REST API environment only when replacing the self-hosted example boundary
+- PostgreSQL access only when running database validation against a non-local environment
 
 ## Local Setup
 
@@ -170,11 +169,26 @@ Create a local environment file:
 cp .env.example .env
 ```
 
+On PowerShell, use:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+The committed defaults target the local Compose services. Keep `.env` uncommitted; replace its
+values through environment variables or CI secrets for shared environments.
+
 Start local dependencies:
 
 ```bash
 npm run services:up
 npm run services:wait
+```
+
+Confirm service state when troubleshooting startup:
+
+```bash
+docker compose ps
 ```
 
 Expected local services:
@@ -256,8 +270,11 @@ Code quality scripts:
 
 ```bash
 npm run lint
-npm run format
+npm run format:check
+npm run typecheck
 ```
+
+Use `npm run format` only when intentionally rewriting formatting.
 
 ## Test Types
 
@@ -379,6 +396,16 @@ npx.cmd allure open artifacts/allure-report
 
 Raw result files are written to `artifacts/allure-results`; the generated report is written to `artifacts/allure-report`. Regenerate the report after each test run.
 
+## Troubleshooting
+
+| Symptom                                            | Check / resolution                                                                                                   |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `RUN_INTEGRATION_TESTS` tests are skipped          | Start and wait for Compose services, then set `RUN_INTEGRATION_TESTS=true` in the same shell.                        |
+| `services:wait` times out                          | Run `docker compose ps` and `docker compose logs --no-color`; verify that ports 9092, 5432, and 8080 are free.       |
+| Kafka or PostgreSQL connections use the wrong host | Check `.env` and any shell or CI environment variables; environment variables override the `.env` defaults.          |
+| WireMock tests fail after an interrupted run       | Restart services or run the WireMock suite again; its setup and teardown reset mappings to Docker-provided defaults. |
+| The Allure report is empty                         | Run a test first, then run `npm run report:allure`; inspect `artifacts/allure-results`.                              |
+
 ## CI/CD
 
 GitHub Actions and GitLab CI pipelines run formatting, linting, type-checking, and each test group independently. Each test job starts Docker Compose, waits for Kafka, PostgreSQL, and WireMock, generates an Allure HTML report, then publishes Playwright HTML, Allure results, the rendered Allure report, Playwright test results, and Docker diagnostics. A final report job aggregates the Allure result files from every test group and publishes one combined Allure report. The `wiremock` group runs the opt-in business-stub tests.
@@ -424,3 +451,13 @@ Pipeline behavior:
 - Make Kafka and database assertions deterministic with explicit polling and timeout behavior.
 - Prefer clear failure messages over hidden retries.
 - Add comments only when behavior is not obvious.
+
+## Phase 8 hardening notes
+
+- Playwright runs files in parallel. Test data uses generated markers, correlation IDs, order IDs,
+  and Kafka consumer groups so independent scenarios do not share records or consumed messages.
+- WireMock intentionally runs serially because mapping resets are global to its service.
+- Kafka waits use explicit deadlines and are rejected when teardown disconnects the consumer.
+- E2E teardown disposes the request context, stops the local API boundary, removes only rows with
+  the test marker, disconnects Kafka clients, and closes the PostgreSQL pool. All cleanup actions
+  are attempted even if an earlier action fails.
