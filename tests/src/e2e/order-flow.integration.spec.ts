@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type APIRequestContext } from '@playwright/test';
 import type { QueryResultRow } from 'pg';
 
 import { ApiClient } from '../../../app/src/clients/api/api-client';
@@ -47,23 +47,25 @@ test.describe('order API to Kafka to PostgreSQL flow', () => {
       correlationId,
     });
     let orderApi: OrderApiServer | undefined;
-
-    await ensureKafkaTopic(kafka, topic);
-    await database.query(`
-      CREATE TABLE IF NOT EXISTS orders (
-        order_id UUID PRIMARY KEY,
-        customer_id UUID NOT NULL,
-        total NUMERIC(12, 2) NOT NULL CHECK (total >= 0),
-        currency TEXT NOT NULL,
-        test_marker TEXT NOT NULL,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )
-    `);
-    await producer.connect();
-    await consumer.connect();
-    await attachEnvironmentMetadata(testInfo, environment, correlationId);
+    let requestContext: APIRequestContext | undefined;
+    let ordersTableReady = false;
 
     try {
+      await ensureKafkaTopic(kafka, topic);
+      await database.query(`
+        CREATE TABLE IF NOT EXISTS orders (
+          order_id UUID PRIMARY KEY,
+          customer_id UUID NOT NULL,
+          total NUMERIC(12, 2) NOT NULL CHECK (total >= 0),
+          currency TEXT NOT NULL,
+          test_marker TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `);
+      ordersTableReady = true;
+      await producer.connect();
+      await consumer.connect();
+      await attachEnvironmentMetadata(testInfo, environment, correlationId);
       orderApi = await startOrderApiServer({
         onOrderAccepted: async (acceptedOrder, acceptedCorrelationId) => {
           const event = OrderCreatedEventBuilder.create()
@@ -88,7 +90,7 @@ test.describe('order API to Kafka to PostgreSQL flow', () => {
           );
         },
       });
-      const requestContext = await playwright.request.newContext({ baseURL: orderApi.baseUrl });
+      requestContext = await playwright.request.newContext({ baseURL: orderApi.baseUrl });
       const apiClient = new ApiClient(requestContext);
       const consumedEvent = consumer.waitForMessage<OrderCreatedEvent>({
         topic,
@@ -156,14 +158,34 @@ test.describe('order API to Kafka to PostgreSQL flow', () => {
         { orderId: order.orderId, topic },
         'Validated API, Kafka, and PostgreSQL order flow',
       );
-      await requestContext.dispose();
     } finally {
-      if (orderApi) await orderApi.close();
-      await database.withTransaction((client) =>
-        cleanupByMarker(client, 'orders', 'test_marker', order.testMarker),
-      );
-      await Promise.all([producer.disconnect(), consumer.disconnect()]);
-      await database.close();
+      const connectionCleanup = await Promise.allSettled([
+        ...(requestContext ? [requestContext.dispose()] : []),
+        producer.disconnect(),
+        consumer.disconnect(),
+      ]);
+      const serverCleanup = orderApi ? await Promise.allSettled([orderApi.close()]) : [];
+      const dataCleanup = ordersTableReady
+        ? await Promise.allSettled([
+            database.withTransaction((client) =>
+              cleanupByMarker(client, 'orders', 'test_marker', order.testMarker),
+            ),
+          ])
+        : [];
+      const databaseCleanup = await Promise.allSettled([database.close()]);
+      const cleanupResults = [
+        ...connectionCleanup,
+        ...serverCleanup,
+        ...dataCleanup,
+        ...databaseCleanup,
+      ];
+      const cleanupErrors = cleanupResults
+        .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+        .map((result) => result.reason);
+
+      if (cleanupErrors.length > 0) {
+        throw new AggregateError(cleanupErrors, 'Order-flow test cleanup failed.');
+      }
     }
   });
 });

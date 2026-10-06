@@ -1,5 +1,12 @@
 # Decision Register
 
+## Phase 8 scope review
+
+The Phase 8 hardening pass does not add a custom DSL, generator, plugin system, multi-database
+support, Kubernetes deployment, k6/Gatling, or AI-generated tests. The representative scenarios do
+not yet demonstrate recurring test authoring that would justify those abstractions. The items remain
+deferred until real project usage establishes a concrete need.
+
 | Decision               | Chosen approach                                                                                                   | Status                         |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------ |
 | Node.js and npm        | Node.js 20+ and npm 10+, enforced in `package.json`.                                                              | Decided                        |
