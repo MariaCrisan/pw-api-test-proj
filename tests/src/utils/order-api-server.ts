@@ -16,7 +16,7 @@ export interface OrderApiServerOptions {
 export async function startOrderApiServer(
   options: OrderApiServerOptions = {},
 ): Promise<OrderApiServer> {
-  const acceptedOrders = new Map<string, { correlationId: string }>();
+  const acceptedOrders = new Map<string, Promise<{ correlationId: string }>>();
   const server = createServer(async (request, response) => {
     if (request.method !== 'POST' || request.url !== '/orders') {
       sendJson(response, 404, { error: 'Not found' });
@@ -39,19 +39,27 @@ export async function startOrderApiServer(
       }
 
       const correlationId = request.headers['x-correlation-id']?.toString() ?? order.testMarker;
-      const existingOrder = options.idempotent ? acceptedOrders.get(order.orderId) : undefined;
-      if (existingOrder) {
-        sendJson(response, 201, {
-          orderId: order.orderId,
-          correlationId: existingOrder.correlationId,
-          status: 'accepted',
-        });
-        return;
+      let acceptance = options.idempotent ? acceptedOrders.get(order.orderId) : undefined;
+      if (!acceptance) {
+        // Reserve the operation before its callback runs so concurrent requests share it.
+        acceptance = Promise.resolve()
+          .then(async () => {
+            await options.onOrderAccepted?.(order, correlationId);
+            return { correlationId };
+          })
+          .catch((error: unknown) => {
+            if (options.idempotent) acceptedOrders.delete(order.orderId);
+            throw error;
+          });
+        if (options.idempotent) acceptedOrders.set(order.orderId, acceptance);
       }
 
-      await options.onOrderAccepted?.(order, correlationId);
-      if (options.idempotent) acceptedOrders.set(order.orderId, { correlationId });
-      sendJson(response, 201, { orderId: order.orderId, correlationId, status: 'accepted' });
+      const acceptedOrder = await acceptance;
+      sendJson(response, 201, {
+        orderId: order.orderId,
+        correlationId: acceptedOrder.correlationId,
+        status: 'accepted',
+      });
     } catch (error) {
       if (error instanceof SyntaxError) {
         sendJson(response, 400, { error: 'Malformed JSON' });

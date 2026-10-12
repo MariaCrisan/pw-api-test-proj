@@ -2,4 +2,7 @@
 
 Run with `npm run test:retry-idempotency`.
 
-Exercise duplicate requests and events. Verify that side effects happen once and that retried calls return the documented result.
+The self-hosted order API examples cover sequential and concurrent duplicate requests. With
+idempotency enabled, overlapping requests share one acceptance operation and receive the same
+response. Failed operations are removed so a later retry can succeed. With idempotency disabled,
+duplicates are processed independently.
