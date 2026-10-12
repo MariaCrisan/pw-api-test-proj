@@ -3,14 +3,15 @@ stages:
   - test
   - report
 
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ''
+  NPM_CONFIG_CACHE: '$CI_PROJECT_DIR/.npm'
+
 default:
   image: docker:27.5.1-cli
   services:
     - name: docker:27.5.1-dind
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ''
-    NPM_CONFIG_CACHE: '$CI_PROJECT_DIR/.npm'
   cache:
     key:
       files:
