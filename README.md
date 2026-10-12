@@ -163,6 +163,7 @@ values with zod. `APP_ENV` labels the execution environment; it does not select 
 | `API_BASE_URL`                        | `http://localhost:8080` | Shared API configuration; sample HTTP tests use their own server URL |
 | `KAFKA_CLIENT_ID`                     | `pw-api-test-framework` | Kafka client identifier                                              |
 | `KAFKA_BROKERS`                       | `localhost:9092`        | Comma-separated broker addresses                                     |
+| `KAFKA_ADVERTISED_HOST`               | `localhost`             | Host advertised by the Compose Kafka broker to external clients      |
 | `KAFKA_SSL`                           | `false`                 | Kafka TLS setting (`true` or `false`)                                |
 | `POSTGRES_HOST` / `POSTGRES_PORT`     | `localhost` / `5432`    | Database address                                                     |
 | `POSTGRES_DATABASE`                   | `api_test`              | Database name                                                        |
@@ -256,6 +257,11 @@ clear `artifacts/allure-results` before a run when you need a report containing 
 `workflow_dispatch`. Manual runs accept a `test_group` choice (`all` or one of the nine groups).
 [GitLab CI](.gitlab-ci.yml) uses `quality`, `test`, and `report` stages and always runs the nine-group
 matrix; its runner must support Docker-in-Docker.
+
+GitLab test jobs connect to published services through the Docker-in-Docker hostname `docker`:
+Kafka at `docker:9092`, PostgreSQL at `docker:5432`, and WireMock at `http://docker:8080`.
+`KAFKA_ADVERTISED_HOST=docker` makes the Kafka broker advertise that same reachable address.
+Compose defaults this host to `localhost` for local runs and GitHub Actions.
 
 Both pipelines install with `npm ci`, check formatting/lint/types, start Compose in each test job,
 wait for services, and enable the relevant opt-in flag. They generate per-group Allure HTML and retain

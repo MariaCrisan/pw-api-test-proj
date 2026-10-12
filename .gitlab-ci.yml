@@ -34,6 +34,11 @@ quality:
 test-groups:
   stage: test
   needs: [quality]
+  variables:
+    KAFKA_BROKERS: docker:9092
+    KAFKA_ADVERTISED_HOST: docker
+    POSTGRES_HOST: docker
+    WIREMOCK_BASE_URL: http://docker:8080
   parallel:
     matrix:
       - TEST_GROUP:
