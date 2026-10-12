@@ -26,6 +26,7 @@ import {
   runIntegrationTests,
 } from '../utils/integration';
 import { startOrderApiServer, type OrderApiServer } from '../utils/order-api-server';
+import { createTestIsolationContext } from '../utils/test-isolation';
 
 const topic = 'orders.created.integration';
 
@@ -40,8 +41,9 @@ test.describe('order API to Kafka to PostgreSQL flow', () => {
     const database = new PostgresClient(environment.postgres);
     const producer = new KafkaJsonProducer(kafka);
     const consumer = new KafkaJsonConsumer(kafka);
-    const order = OrderBuilder.create({ marker: 'e2e-order' }).build();
-    const correlationId = `${order.testMarker}-correlation`;
+    const isolation = createTestIsolationContext('e2e-order');
+    const order = OrderBuilder.create({ marker: isolation.marker }).build();
+    const correlationId = isolation.correlationId;
     const logger = createLogger('order-flow', {
       environment: environment.environment,
       correlationId,

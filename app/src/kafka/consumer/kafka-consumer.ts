@@ -62,31 +62,42 @@ export class KafkaJsonConsumer {
     const expectedDescription = describeExpectedMessage(options);
 
     return new Promise<ConsumedKafkaMessage<TValue>>((resolve, reject) => {
+      const fail = (error: unknown): void => {
+        const reason = error instanceof Error ? error.message : String(error);
+        this.rejectActiveWait(
+          new Error(`Kafka consumer failed while waiting for ${expectedDescription}: ${reason}`, {
+            cause: error,
+          }),
+        );
+      };
       const timeout = setTimeout(() => {
         this.rejectActiveWait(
           new Error(`Timed out after ${timeoutMs}ms waiting for ${expectedDescription}.`),
         );
       }, timeoutMs);
       this.activeWait = { reject, timeout };
+      this.activeWait.removeCrashListener = this.consumer.on(
+        this.consumer.events.CRASH,
+        ({ payload }) => fail(payload.error),
+      );
 
       void this.consumer
         .run({
           eachMessage: async ({ topic, partition, message }) => {
-            const candidate = parseKafkaMessage<TValue>(topic, partition, message);
+            try {
+              const candidate = parseKafkaMessage<TValue>(topic, partition, message);
 
-            if (matches(candidate, options)) {
-              this.clearActiveWait();
-              resolve(candidate);
+              if (matches(candidate, options)) {
+                this.clearActiveWait();
+                resolve(candidate);
+              }
+            } catch (error) {
+              fail(error);
+              throw error;
             }
           },
         })
-        .catch((error: unknown) => {
-          this.clearActiveWait();
-          const reason = error instanceof Error ? error.message : String(error);
-          reject(
-            new Error(`Kafka consumer failed while waiting for ${expectedDescription}: ${reason}`),
-          );
-        });
+        .catch(fail);
     });
   }
 
@@ -101,6 +112,7 @@ export class KafkaJsonConsumer {
   private clearActiveWait(): void {
     if (this.activeWait) {
       clearTimeout(this.activeWait.timeout);
+      this.activeWait.removeCrashListener?.();
       this.activeWait = undefined;
     }
   }
@@ -117,6 +129,7 @@ export class KafkaJsonConsumer {
 interface ActiveWait {
   reject: (reason?: unknown) => void;
   timeout: NodeJS.Timeout;
+  removeCrashListener?: () => void;
 }
 
 function parseKafkaMessage<TValue extends JsonValue>(

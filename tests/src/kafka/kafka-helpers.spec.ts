@@ -104,6 +104,8 @@ test.describe('Kafka helpers', () => {
       disconnect: async () => undefined,
       stop: async () => undefined,
       subscribe: async () => undefined,
+      events: { CRASH: 'consumer.crash' },
+      on: () => () => undefined,
       run: async ({ eachMessage }: { eachMessage: (payload: unknown) => Promise<void> }) => {
         await eachMessage({
           topic: 'orders.created',

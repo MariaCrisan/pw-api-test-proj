@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 import { loadEnvironmentConfig } from '../../../app/src/config/environment';
 import { KafkaJsonConsumer, KafkaJsonProducer } from '../../../app/src/kafka';
 import { orderCreatedEventPayloadSchema } from '../../../app/src/schemas/kafka';
+import { createCorrelationId } from '../../../app/src/utils/correlation-id';
 import { expectKafkaHeader, expectKafkaKey } from '../assertions/kafka/kafka-assertions';
 import { expectSchema } from '../assertions/schema/schema-assertions';
 import { OrderCreatedEventBuilder } from '../builders/kafka/order-created-event-builder';
@@ -29,7 +30,7 @@ test.describe('order-created Kafka integration', () => {
     await ensureKafkaTopic(kafka, topic);
 
     const event = OrderCreatedEventBuilder.create({ seed: 99, marker: 'kafka-integration' })
-      .withCorrelationId('kafka-integration-correlation')
+      .withCorrelationId(createCorrelationId('kafka-integration'))
       .build();
     await attachEnvironmentMetadata(testInfo, environment, event.correlationId);
     const producer = new KafkaJsonProducer(kafka);
