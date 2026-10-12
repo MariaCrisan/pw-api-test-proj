@@ -1,463 +1,289 @@
 # pw-api-test-proj
 
-TypeScript API test automation framework for REST APIs with Kafka event validation, PostgreSQL assertions, JSON Schema contract checks, WireMock mocks, and Playwright Test.
+TypeScript API test automation framework using Playwright Test, with Kafka event validation,
+PostgreSQL assertions, JSON Schema contracts, and WireMock stubs.
 
-## Project Status
+The repository includes reusable clients and representative order scenarios. The default suite runs
+without Docker: REST tests start local HTTP servers, and framework tests use in-process doubles.
+Kafka, PostgreSQL, and WireMock integrations are opt-in. The E2E example also starts its own order API;
+validating a deployed business service requires adapting that boundary and its contracts.
 
-The reusable framework and representative test suites are implemented: TypeScript/Playwright configuration, local Docker Compose definitions, validated runtime configuration, API and PostgreSQL clients, Kafka producer/consumer helpers, AJV schemas, database polling and cleanup, builders, fixtures, assertions, logging, correlation IDs, and Playwright HTML reporting.
+## Quick start
 
-The default suite runs without Docker. The first framework-owned API-to-Kafka-to-PostgreSQL flow has been verified locally and in GitHub Actions. Its API boundary is a self-hosted test server, so it does not yet prove integration with a deployed business service. WireMock provides a reusable inventory mapping and test helpers; Allure results, API/Kafka/database/schema attachments, and execution metadata are generated alongside the Playwright HTML report.
+Prerequisites:
 
-## Goals
+- Node.js 20+ and npm 10+ (GitHub Actions uses Node.js 22).
+- Docker Engine or Docker Desktop with Docker Compose for integration tests.
+- Java on `PATH` for generating or opening Allure HTML reports (CI uses Java 17).
 
-- Test REST API behavior using Playwright API request fixtures.
-- Validate Kafka producer and consumer flows with reusable helpers.
-- Validate API responses and Kafka events using JSON Schema and AJV.
-- Support end-to-end API to Kafka to PostgreSQL validation.
-- Keep test data reusable through JSON fixtures, builders, and Faker.
-- Provide deterministic async assertions with polling, explicit timeouts, and clear diagnostics.
-- Generate Playwright HTML and Allure reports with diagnostic attachments.
-- Run test groups independently locally and in CI/CD.
-
-## Tech Stack
-
-| Area              | Tools                          |
-| ----------------- | ------------------------------ |
-| Language          | TypeScript                     |
-| Runtime           | Node.js, npm                   |
-| Test runner       | Playwright Test                |
-| API testing       | Playwright API Request Context |
-| Kafka             | KafkaJS, Docker Compose        |
-| Database          | PostgreSQL, node-postgres `pg` |
-| Schema validation | AJV, JSON Schema               |
-| Mocking           | WireMock                       |
-| Test data         | Faker                          |
-| Reporting         | Playwright HTML Report, Allure |
-| Logging           | Pino                           |
-| Configuration     | dotenv, zod                    |
-| Code quality      | ESLint, Prettier               |
-| CI/CD             | GitHub Actions and GitLab CI   |
-
-## Target Project Structure
-
-```text
-root
-│
-├── app
-│   └── src
-│       ├── clients
-│       │   ├── api
-│       │   └── db
-│       │
-│       ├── db
-│       │   ├── queries
-│       │   └── transactions
-│       │
-│       ├── kafka
-│       │   ├── producer
-│       │   └── consumer
-│       │
-│       ├── schemas
-│       │   ├── api
-│       │   ├── kafka
-│       │   └── contracts
-│       │
-│       ├── config
-│       │
-│       ├── logging
-│       │
-│       └── utils
-│
-├── tests
-│   └── src
-│       ├── rest-functional
-│       ├── kafka
-│       ├── e2e
-│       ├── contracts
-│       ├── negative
-│       ├── retry-idempotency
-│       ├── smoke-performance
-│       ├── consumer-lag-timeout
-│       │
-│       ├── assertions
-│       │   ├── api
-│       │   ├── kafka
-│       │   ├── database
-│       │   └── schema
-│       │
-│       ├── fixtures
-│       │   ├── api
-│       │   ├── kafka
-│       │   ├── db
-│       │   └── contracts
-│       │
-│       ├── builders
-│       │   ├── api
-│       │   ├── kafka
-│       │   └── db
-│       │
-│       ├── mocks
-│       │   └── wiremock
-│       │
-│       ├── reporting
-│       │
-│       ├── config
-│       │
-│       └── utils
-│
-├── docker
-│   ├── kafka
-│   ├── postgres
-│   └── wiremock
-│       ├── mappings
-│       └── __files
-│
-├── artifacts
-│   ├── logs
-│   ├── allure-results
-│   ├── allure-report
-│   ├── html-report
-│   ├── requests
-│   ├── responses
-│   └── kafka
-│
-├── docs
-│   ├── architecture.md
-│   ├── conventions.md
-│   └── testing-strategy.md
-│
-├── .github
-│   └── workflows
-│
-├── .gitlab
-│
-├── .env.example
-├── docker-compose.yml
-├── package.json
-├── playwright.config.ts
-├── tsconfig.json
-└── README.md
-```
-
-## Directory Ownership
-
-- `app/src` contains reusable framework code: API clients, DB clients, DB query helpers, Kafka producer/consumer helpers, schemas, configuration, logging, and generic utilities.
-- `tests/src` contains test suites and test-specific support: assertions, schema assertion helpers, fixtures, builders, WireMock helpers, reporting helpers, test config, and test utilities.
-- `docker` contains local service assets and WireMock mappings/files.
-- `artifacts` contains generated runtime output only: logs, reports, request/response payloads, and captured Kafka messages.
-- `docs` contains architecture, convention, and testing strategy documentation.
-
-## Prerequisites
-
-- Node.js 20 or later
-- npm 10 or later
-- Docker Desktop or Docker Engine with Docker Compose
-- Access to a target REST API environment only when replacing the self-hosted example boundary
-- PostgreSQL access only when running database validation against a non-local environment
-
-## Local Setup
-
-Install dependencies:
+From the repository root:
 
 ```bash
-npm install
+npm ci
+npm test
 ```
 
-Create a local environment file:
+Browser installation is unnecessary for the current API-only tests. With the opt-in flags unset,
+Kafka/E2E integration scenarios and WireMock tests are skipped; Kafka helper tests still run.
+
+On Windows, use `npm.cmd` and `npx.cmd` if PowerShell blocks the corresponding `.ps1` wrappers.
+
+## Local integration tests
+
+Optionally copy the local configuration template:
 
 ```bash
 cp .env.example .env
 ```
 
-On PowerShell, use:
+PowerShell equivalent:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-The committed defaults target the local Compose services. Keep `.env` uncommitted; replace its
-values through environment variables or CI secrets for shared environments.
+The committed defaults work with Compose without a `.env` file. Keep `.env` uncommitted.
+`services:wait` loads it automatically, but the test runner does not. The commands below preload
+`dotenv/config` so customized `.env` values are also available to tests. Existing shell environment
+variables take precedence over `.env`.
 
-Start local dependencies:
+Start the services and check readiness:
 
 ```bash
 npm run services:up
 npm run services:wait
 ```
 
-Confirm service state when troubleshooting startup:
+| Service    | Local endpoint   | Implementation                             |
+| ---------- | ---------------- | ------------------------------------------ |
+| Kafka      | `localhost:9092` | Confluent Kafka 7.7.1, single KRaft broker |
+| PostgreSQL | `localhost:5432` | PostgreSQL 16.4; database `api_test`       |
+| WireMock   | `localhost:8080` | WireMock 3.9.1 with committed mappings     |
+
+Compose initializes `framework_health` and `orders` tables. Readiness checks use Kafka administrative
+access, a PostgreSQL `SELECT 1`, and the WireMock admin endpoint. Schema Registry is not included;
+events use JSON.
+
+Run Kafka, E2E, and WireMock groups in Bash:
 
 ```bash
-docker compose ps
+NODE_OPTIONS='--require=dotenv/config' RUN_INTEGRATION_TESTS=true npm run test:kafka
+NODE_OPTIONS='--require=dotenv/config' RUN_INTEGRATION_TESTS=true npm run test:e2e
+NODE_OPTIONS='--require=dotenv/config' RUN_WIREMOCK_TESTS=true npm run test:wiremock
 ```
 
-Expected local services:
+Or run the entire suite, including integrations, in PowerShell:
 
-- Kafka
-- WireMock
-- PostgreSQL
-- Schema Registry, if enabled by the Kafka setup
+```powershell
+$previousNodeOptions = $env:NODE_OPTIONS
+$env:NODE_OPTIONS = "$previousNodeOptions --require=dotenv/config".Trim()
+$env:RUN_INTEGRATION_TESTS = 'true'
+$env:RUN_WIREMOCK_TESTS = 'true'
+try {
+    npm test
+} finally {
+    $env:NODE_OPTIONS = $previousNodeOptions
+    Remove-Item Env:RUN_INTEGRATION_TESTS, Env:RUN_WIREMOCK_TESTS
+}
+```
 
-Stop local dependencies:
+Both flags require the exact value `true`. Selecting an integration group alone does not enable its
+skipped scenarios.
+
+Stop local services when finished:
 
 ```bash
 npm run services:down
 ```
 
-## Configuration
+### Sample order flow
 
-Shared runtime configuration should live under `app/src/config` and be loaded from environment variables using `dotenv` and validated with `zod`.
+The [E2E scenario](tests/src/e2e/order-flow.integration.spec.ts) exercises these steps:
 
-Test-runner and assertion behavior should live under `tests/src/config`.
+1. Provision the `orders.created.integration` Kafka topic and ensure the `orders` table exists.
+2. Start a local order API and connect the Kafka producer, consumer, and PostgreSQL client.
+3. Submit `POST /orders` with an order payload and correlation ID.
+4. The test API callback publishes an event and inserts the order into PostgreSQL.
+5. Consume the matching event, check its key/header/payload, poll for the row, and assert one matching
+   database record.
+6. Dispose connections, stop the API server, and remove rows matching the test marker.
 
-Do not hardcode secrets, base URLs, credentials, topic names, database connection strings, or environment-specific values in test files.
+The standalone [Kafka integration](tests/src/kafka/order-created.integration.spec.ts) uses the same
+topic and validates the event payload with AJV. These examples exercise framework integrations;
+they do not establish production delivery guarantees or deployed-service behavior.
 
-Expected configuration groups:
+## Test commands and coverage
 
-- API base URL
-- API authentication values
-- Kafka broker list
-- Kafka topic names
-- Kafka consumer group IDs
-- PostgreSQL connection settings
-- WireMock URL
-- Assertion timeout and polling intervals
-- Report output paths
+| Command                             | Current coverage                                                                                  | Service requirement                                    |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `npm test`                          | All test files, including builder and DB transaction helper tests                                 | None by default; flags enable integrations             |
+| `npm run test:api`                  | Local health/order endpoints, valid and invalid responses, response schema                        | None                                                   |
+| `npm run test:kafka`                | Kafka configuration, event envelopes, producer/consumer helpers; optional real message round trip | Kafka and `RUN_INTEGRATION_TESTS=true` for integration |
+| `npm run test:e2e`                  | Self-hosted order API to Kafka to PostgreSQL                                                      | Kafka, PostgreSQL, and `RUN_INTEGRATION_TESTS=true`    |
+| `npm run test:contracts`            | REST response and Kafka payload JSON Schema validation                                            | None                                                   |
+| `npm run test:negative`             | Missing fields, missing authorization, malformed HTTP JSON                                        | None                                                   |
+| `npm run test:retry-idempotency`    | Duplicate order request invokes the local acceptance callback once                                | None                                                   |
+| `npm run test:smoke-performance`    | One local order request under a 1,000 ms latency threshold                                        | None                                                   |
+| `npm run test:consumer-lag-timeout` | Consumer timeout diagnostics, delayed delivery, disconnect cancellation using doubles             | None                                                   |
+| `npm run test:wiremock`             | Default inventory mapping, dynamic failure stub, recorded request verification                    | WireMock and `RUN_WIREMOCK_TESTS=true`                 |
 
-Recommended environments:
+The smoke check is a lightweight latency assertion. Broker lag measurement and sustained load testing
+are outside the current examples. Contract tests use JSON Schema, with no OpenAPI validation.
 
-- `local`
-- `dev`
-- `stage`
-
-## Test Commands
-
-Expected npm scripts:
-
-```bash
-npm test
-npm run test:api
-npm run test:kafka
-npm run test:e2e
-npm run test:contracts
-npm run test:negative
-npm run test:retry-idempotency
-npm run test:smoke-performance
-npm run test:consumer-lag-timeout
-npm run test:wiremock
-```
-
-The Kafka and end-to-end tests are opt-in so the framework-only suite remains runnable without Docker. They validate the reusable Kafka/PostgreSQL helpers through a self-hosted order API test boundary; replace that boundary with the real service before treating them as system E2E coverage. After starting and waiting for the local services, run them from PowerShell with:
-
-```powershell
-$env:RUN_INTEGRATION_TESTS = 'true'
-npm run test:kafka
-npm run test:e2e
-Remove-Item Env:RUN_INTEGRATION_TESTS
-```
-
-The sample order flow posts an order to a test API boundary, consumes the resulting `order.created.integration` Kafka event, and polls PostgreSQL for the persisted row. Each run creates a unique marker and removes matching rows during cleanup.
-
-WireMock tests are opt-in and require the local services:
-
-```powershell
-$env:RUN_WIREMOCK_TESTS = 'true'
-npm run test:wiremock
-Remove-Item Env:RUN_WIREMOCK_TESTS
-```
-
-Code quality scripts:
+To run one file or select a named scenario:
 
 ```bash
-npm run lint
+npx playwright test tests/src/rest-functional/orders.spec.ts
+npx playwright test --grep "accepts a valid order"
+```
+
+Playwright enables parallel execution and uses a 30-second test timeout. CI forbids focused tests
+(`test.only`) and retries failures once; local runs have no retries. WireMock scenarios run serially
+because mapping resets affect the whole service.
+
+Quality checks:
+
+```bash
 npm run format:check
+npm run lint
 npm run typecheck
 ```
 
-Use `npm run format` only when intentionally rewriting formatting.
+`npm run format` rewrites formatting across the repository. Type-checking uses `tsc --noEmit`; there
+is no build step or compiled application output.
 
-## Test Types
+## Configuration
 
-| Test type                | Purpose                                                                                                |
-| ------------------------ | ------------------------------------------------------------------------------------------------------ |
-| REST functional          | Validate status codes, response bodies, headers, and schemas.                                          |
-| Kafka                    | Produce and consume messages, then validate keys, headers, payloads, timestamps, and schemas.          |
-| E2E                      | Call REST APIs and validate Kafka side effects and PostgreSQL state.                                   |
-| Contracts                | Validate REST and Kafka contracts using JSON Schema or OpenAPI.                                        |
-| Negative                 | Validate invalid payloads, missing fields, auth errors, malformed Kafka messages, and error responses. |
-| Retry and idempotency    | Validate duplicate handling, retries, and no duplicate records or events.                              |
-| Smoke and performance    | Run lightweight CI checks and optional threshold-based performance checks.                             |
-| Consumer lag and timeout | Validate delayed consumers, timeout behavior, polling, and clear failure messages.                     |
+[Runtime configuration](app/src/config/environment.ts) reads environment variables and validates
+values with zod. `APP_ENV` labels the execution environment; it does not select a separate env file.
 
-## Test Data Strategy
+| Variable                              | Default                 | Purpose                                                              |
+| ------------------------------------- | ----------------------- | -------------------------------------------------------------------- |
+| `APP_ENV`                             | `local`                 | Allowed values: `local`, `dev`, `stage`                              |
+| `API_BASE_URL`                        | `http://localhost:8080` | Shared API configuration; sample HTTP tests use their own server URL |
+| `KAFKA_CLIENT_ID`                     | `pw-api-test-framework` | Kafka client identifier                                              |
+| `KAFKA_BROKERS`                       | `localhost:9092`        | Comma-separated broker addresses                                     |
+| `KAFKA_SSL`                           | `false`                 | Kafka TLS setting (`true` or `false`)                                |
+| `POSTGRES_HOST` / `POSTGRES_PORT`     | `localhost` / `5432`    | Database address                                                     |
+| `POSTGRES_DATABASE`                   | `api_test`              | Database name                                                        |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` | `api_test` / `api_test` | Local database credentials                                           |
+| `WIREMOCK_BASE_URL`                   | `http://localhost:8080` | WireMock API and admin endpoint                                      |
+| `ASSERTION_TIMEOUT_MS`                | `15000`                 | Integration wait timeout                                             |
+| `ASSERTION_POLL_INTERVAL_MS`          | `250`                   | Database polling interval                                            |
+| `RUN_INTEGRATION_TESTS`               | Unset                   | Enable Kafka and E2E integration scenarios with `true`               |
+| `RUN_WIREMOCK_TESTS`                  | Unset                   | Enable WireMock tests with `true`                                    |
+| `SERVICE_READINESS_TIMEOUT_MS`        | `60000`                 | Readiness timeout per service                                        |
+| `SERVICE_READINESS_POLL_INTERVAL_MS`  | `1000`                  | Delay between readiness attempts                                     |
+| `LOG_LEVEL`                           | `info`                  | Pino logging level                                                   |
 
-Use a hybrid test data approach:
+The reusable [Kafka connection helpers](app/src/kafka/config.ts) also support
+`KAFKA_SASL_MECHANISM` (`plain`, `scram-sha-256`, `scram-sha-512`), `KAFKA_SASL_USERNAME`, and
+`KAFKA_SASL_PASSWORD`. The current integration factory and readiness script use broker addresses
+without applying TLS/SASL settings. Adapt their client creation before using a secured broker.
+Likewise, changing `API_BASE_URL` alone does not redirect the self-hosted API examples to a real service.
 
-- Store reusable static payloads in `tests/src/fixtures`.
-- Store fluent data builders in `tests/src/builders`.
-- Store test-specific utilities in `tests/src/utils`.
-- Use Faker for dynamic values such as emails, IDs, names, timestamps, addresses, and correlation IDs.
-- Use seeded Faker where deterministic data is required.
+## Project layout
 
-Rules:
+| Location                                                                                                                               | Responsibility                                                               |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `app/src/clients/api`                                                                                                                  | Reusable Playwright API request client                                       |
+| `app/src/clients/db`, `app/src/db`                                                                                                     | PostgreSQL pooling, queries, transactions, targeted cleanup                  |
+| `app/src/kafka`                                                                                                                        | JSON producer/consumer, connection configuration, event envelopes            |
+| `app/src/schemas`                                                                                                                      | AJV validator and API/Kafka JSON schemas                                     |
+| `app/src/config`, `app/src/logging`, `app/src/utils`                                                                                   | Environment validation, Pino logging, correlation IDs, polling               |
+| `tests/src/rest-functional`, `kafka`, `e2e`, `contracts`, `negative`, `retry-idempotency`, `smoke-performance`, `consumer-lag-timeout` | Test groups                                                                  |
+| `tests/src/assertions`                                                                                                                 | API, Kafka, database, and schema assertions                                  |
+| `tests/src/builders`, `tests/src/fixtures`                                                                                             | Fluent builders, JSON fixtures, builder tests                                |
+| `tests/src/db`                                                                                                                         | Transaction/cleanup helper tests                                             |
+| `tests/src/mocks/wiremock`                                                                                                             | WireMock admin client and integration scenarios                              |
+| `tests/src/reporting`, `tests/src/utils`                                                                                               | Attachments, Faker, test isolation, self-hosted order API, integration setup |
+| `docker`, `docker-compose.yml`                                                                                                         | Service definitions, PostgreSQL initialization, WireMock mappings/body files |
+| `scripts/wait-for-services.mjs`                                                                                                        | Dependency readiness checks                                                  |
+| `docs`                                                                                                                                 | Architecture, conventions, strategy, decisions, and implementation plans     |
+| `.github/workflows/ci.yml`, `.gitlab-ci.yml`                                                                                           | CI quality checks, test matrices, and reports                                |
+| `artifacts`, `test-results`                                                                                                            | Ignored generated reports, attachments, and execution output                 |
 
-- Test files should not manually construct large payloads.
-- Use builders for dynamic data.
-- Use fixtures for reusable static scenarios.
-- Builders may load base objects from JSON fixtures and override fields.
-- Avoid hardcoded magic values inside tests.
+### Adding scenarios
 
-## Adding REST API Tests
+1. Add reusable clients or helpers under `app/src`, and schemas under `app/src/schemas`.
+2. Add static fixtures under `tests/src/fixtures` and dynamic builders under `tests/src/builders`.
+   Seed Faker for reproducible values; generate unique IDs/markers for shared-service data.
+3. Add a `*.spec.ts` file to the relevant test group. Keep assertions and test-only support under
+   `tests/src`.
+4. Use explicit polling deadlines for eventual consistency, correlated Kafka filters, and targeted
+   database cleanup. A `KafkaJsonConsumer` supports one wait per instance and generates a consumer
+   group by default; disconnect it in teardown.
+5. Attach useful API, Kafka, database, schema-input, or execution metadata using
+   [reporting helpers](tests/src/reporting/attachments.ts).
+6. Run the relevant group and quality checks, then the baseline suite before merging.
 
-1. Add or update the reusable API client under `app/src/clients/api`.
-2. Add request or response schemas under `app/src/schemas/api`.
-3. Add static payloads under `tests/src/fixtures/api` when needed.
-4. Add builders under `tests/src/builders/api` for dynamic payloads.
-5. Add reusable assertions under `tests/src/assertions/api`.
-6. Add the test under the relevant folder in `tests/src`.
-7. Run the specific test group before opening a pull request.
+WireMock static mappings and response files belong in `docker/wiremock/mappings` and
+`docker/wiremock/__files`. Its integration suite resets mappings to committed defaults before and
+after each test.
 
-## Adding Kafka Tests
+## Reports and diagnostics
 
-1. Add producer logic under `app/src/kafka/producer`.
-2. Add consumer logic under `app/src/kafka/consumer`.
-3. Add polling and timeout assertions under `tests/src/assertions/kafka`.
-4. Add event schemas under `app/src/schemas/kafka`.
-5. Add reusable Kafka payload fixtures under `tests/src/fixtures/kafka`.
-6. Add Kafka message builders under `tests/src/builders/kafka`.
-7. Attach consumed message payloads to test reports for failure diagnostics.
+Every test run produces Playwright HTML and Allure results. Representative API, Kafka, and E2E
+scenarios add JSON attachments for requests/responses, consumed messages, database results, schema
+inputs, and execution metadata where applicable. Pino logs go to standard output.
 
-## Database Validation
+| Output                                             | Location                   |
+| -------------------------------------------------- | -------------------------- |
+| Playwright HTML                                    | `artifacts/html-report`    |
+| Allure raw results and attachments                 | `artifacts/allure-results` |
+| Generated Allure HTML                              | `artifacts/allure-report`  |
+| Playwright test output and retained failure traces | `test-results`             |
 
-Database checks should use reusable PostgreSQL helpers.
-
-Expected ownership:
-
-- DB connection/client code lives under `app/src/clients/db`.
-- DB query helpers live under `app/src/db/queries`.
-- DB transaction and cleanup helpers live under `app/src/db/transactions`.
-- DB assertions live under `tests/src/assertions/database`.
-- DB fixtures and builders live under `tests/src/fixtures/db` and `tests/src/builders/db`.
-
-Credentials must come from environment variables.
-
-## WireMock
-
-WireMock runtime assets should live under `docker/wiremock`.
-
-- Static mappings belong in `docker/wiremock/mappings`.
-- Response body files belong in `docker/wiremock/__files`.
-- Test helper code for creating, resetting, or asserting stubs belongs in `tests/src/mocks/wiremock`.
-
-`WireMockClient` resets mappings to their Docker-provided defaults before and after each test, creates test-specific stubs through the admin API, and verifies recorded requests.
-
-## Reporting
-
-Playwright HTML reports are written under `artifacts/html-report`; Allure result files are written under `artifacts/allure-results`. API request/response, Kafka message, PostgreSQL query, schema-input, and environment/correlation metadata attachments are included for the representative API, Kafka, and E2E flows.
-
-Reusable reporting helpers, attachment helpers, and report metadata utilities should live under `tests/src/reporting`.
-
-Expected artifact layout:
-
-```text
-artifacts/
-  logs/
-  allure-results/
-  allure-report/
-  html-report/
-  requests/
-  responses/
-  kafka/
-```
-
-The target reporting design includes:
-
-- Playwright execution summary
-- Allure results and report
-- API request and response payload attachments
-- Kafka message payload attachments
-- Schema validation errors
-- Assertion failure details
-- Async timeout diagnostics
-- Environment information
-
-View Playwright HTML report:
+View the latest Playwright report:
 
 ```bash
 npm run report
 ```
 
-After running tests, generate the Allure report and open it locally:
+With Java available, generate and open Allure HTML:
 
-```powershell
-npm.cmd run report:allure
-npx.cmd allure open artifacts/allure-report
+```bash
+npm run report:allure
+npx allure open artifacts/allure-report
 ```
 
-Raw result files are written to `artifacts/allure-results`; the generated report is written to `artifacts/allure-report`. Regenerate the report after each test run.
-
-## Troubleshooting
-
-| Symptom                                            | Check / resolution                                                                                                   |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `RUN_INTEGRATION_TESTS` tests are skipped          | Start and wait for Compose services, then set `RUN_INTEGRATION_TESTS=true` in the same shell.                        |
-| `services:wait` times out                          | Run `docker compose ps` and `docker compose logs --no-color`; verify that ports 9092, 5432, and 8080 are free.       |
-| Kafka or PostgreSQL connections use the wrong host | Check `.env` and any shell or CI environment variables; environment variables override the `.env` defaults.          |
-| WireMock tests fail after an interrupted run       | Restart services or run the WireMock suite again; its setup and teardown reset mappings to Docker-provided defaults. |
-| The Allure report is empty                         | Run a test first, then run `npm run report:allure`; inspect `artifacts/allure-results`.                              |
+Regenerate Allure HTML after test execution. Raw Allure results can accumulate across local runs;
+clear `artifacts/allure-results` before a run when you need a report containing only that run.
 
 ## CI/CD
 
-GitHub Actions and GitLab CI pipelines run formatting, linting, type-checking, and each test group independently. Each test job starts Docker Compose, waits for Kafka, PostgreSQL, and WireMock, generates an Allure HTML report, then publishes Playwright HTML, Allure results, the rendered Allure report, Playwright test results, and Docker diagnostics. A final report job aggregates the Allure result files from every test group and publishes one combined Allure report. The `wiremock` group runs the opt-in business-stub tests.
+[GitHub Actions](.github/workflows/ci.yml) runs on pushes to `main`, pull requests, and manual
+`workflow_dispatch`. Manual runs accept a `test_group` choice (`all` or one of the nine groups).
+[GitLab CI](.gitlab-ci.yml) uses `quality`, `test`, and `report` stages and always runs the nine-group
+matrix; its runner must support Docker-in-Docker.
 
-GitHub Actions supports a `workflow_dispatch` `test_group` input. GitLab runs the same groups through a parallel matrix. GitLab CI requires a runner that permits Docker-in-Docker.
+Both pipelines install with `npm ci`, check formatting/lint/types, start Compose in each test job,
+wait for services, and enable the relevant opt-in flag. They generate per-group Allure HTML and retain
+Playwright HTML, Allure results/HTML, test output, and Docker logs for 14 days. A final job generates
+an aggregated Allure report. Test jobs capture diagnostics and stop services even after failures.
 
-Required stages:
+The group matrices omit the builder and DB helper suites included by `npm test`; run the baseline
+suite locally to cover those files.
 
-- install
-- lint
-- build
-- api-tests
-- kafka-tests
-- contract-tests
-- negative-tests
-- retry-idempotency-tests
-- smoke-performance-tests
-- consumer-lag-timeout-tests
-- e2e-tests
-- report-publish
+## Troubleshooting
 
-Pipeline behavior:
+| Symptom                                                     | Resolution                                                                                                        |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Integration tests are skipped                               | Set the appropriate opt-in flag to `true` in the same shell as the test command.                                  |
+| `services:wait` fails                                       | Check `docker compose ps` and `docker compose logs --no-color`; confirm ports 9092, 5432, and 8080 are available. |
+| Tests ignore customized `.env` values                       | Preload `dotenv/config` as shown above; inspect existing shell variables that override `.env`.                    |
+| Changing `API_BASE_URL` has no effect on example HTTP tests | The examples create their own server; adapt the request context to the target service.                            |
+| WireMock state is left over after an interrupted run        | Rerun the suite to reset mappings, or restart the service.                                                        |
+| Allure generation fails or the report is empty              | Confirm `java -version` works, run tests, and inspect `artifacts/allure-results` before generating HTML.          |
+| PowerShell blocks `npm` or `npx`                            | Use `npm.cmd` or `npx.cmd`.                                                                                       |
 
-- Start Docker Compose services.
-- Wait for Kafka readiness.
-- Wait for PostgreSQL readiness.
-- Wait for WireMock readiness.
-- Run test suites independently.
-- Publish Allure artifacts.
-- Publish Playwright HTML report artifacts.
-- Publish logs.
-- Fail the pipeline on test failures.
-- Support environment variables for different environments.
-- Allow execution of specific test groups through pipeline variables.
+## Further reading
 
-## Design Rules
+- [Architecture](docs/architecture.md)
+- [Conventions](docs/conventions.md)
+- [Testing strategy](docs/testing-strategy.md)
+- [Decision register](docs/decision-register.md)
+- [Implementation checklist and deferred work](TODO.md)
 
-- Keep tests readable as business scenarios.
-- Keep reusable app/framework helpers in `app/src` and test-specific helpers in `tests/src`.
-- Keep generated output under `artifacts`; do not commit runtime logs or generated reports.
-- Keep helpers generic enough for reuse without over-engineering.
-- Use strict TypeScript.
-- Make Kafka and database assertions deterministic with explicit polling and timeout behavior.
-- Prefer clear failure messages over hidden retries.
-- Add comments only when behavior is not obvious.
-
-## Phase 8 hardening notes
-
-- Playwright runs files in parallel. Test data uses generated markers, correlation IDs, order IDs,
-  and Kafka consumer groups so independent scenarios do not share records or consumed messages.
-- WireMock intentionally runs serially because mapping resets are global to its service.
-- Kafka waits use explicit deadlines and are rejected when teardown disconnects the consumer.
-- E2E teardown disposes the request context, stops the local API boundary, removes only rows with
-  the test marker, disconnects Kafka clients, and closes the PostgreSQL pool. All cleanup actions
-  are attempted even if an earlier action fails.
+Planning documents and checklist entries describe intended scope as well as completed work; use the
+source, npm scripts, and CI definitions to confirm current behavior.
